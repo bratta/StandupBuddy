@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xcodebuild -scheme StandupBuddy -destination 'platform=macOS' build)",
+      "Bash(xcodebuild -runFirstLaunch)",
+      "Bash(xcodebuild -scheme StandupBuddyTests -destination 'platform=macOS' test)",
+      "Bash(xcodegen generate *)",
+      "Bash(sqlite3 '__TRACKED_VAR__/Library/Containers/house.gourley.StandupBuddy/Data/Library/Application Support/StandupBuddy/standupbuddy.sqlite' 'SELECT * FROM setting;')",
+      "Bash(sqlite3 '__TRACKED_VAR__/Library/Containers/house.gourley.StandupBuddy/Data/Library/Application Support/StandupBuddy/standupbuddy.sqlite' 'SELECT id, hex\\(details\\) FROM standupItem LIMIT 5;')",
+      "Bash(xcodebuild -scheme StandupBuddyTests -destination 'platform=macOS' build-for-testing)",
+      "Bash(pkill -x StandupBuddy)",
+      "Bash(xcodebuild -scheme StandupBuddyTests -destination 'platform=macOS' test CODE_SIGNING_ALLOWED=NO)",
+      "Bash(xcodebuild -scheme StandupBuddyTests -destination 'platform=macOS' test CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO)",
+      "Bash(xargs ls)"
+    ]
+  }
+}
