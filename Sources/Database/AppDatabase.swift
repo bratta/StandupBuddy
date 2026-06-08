@@ -4,16 +4,13 @@ import GRDB
 final class AppDatabase: Sendable {
     let dbQueue: DatabaseQueue
 
-    static let shared: AppDatabase = {
-        let url = try! FileManager.default
-            .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-            .appendingPathComponent("StandupBuddy", isDirectory: true)
-        try! FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-        let dbPath = url.appendingPathComponent("standupbuddy.sqlite").path
-        let queue = try! DatabaseQueue(path: dbPath)
-        return AppDatabase(dbQueue: queue)
-    }()
+    init(path: String) throws {
+        let queue = try DatabaseQueue(path: path)
+        self.dbQueue = queue
+        try migrate(queue)
+    }
 
+    // For tests — in-memory database
     init(dbQueue: DatabaseQueue) {
         self.dbQueue = dbQueue
         try! migrate(dbQueue)

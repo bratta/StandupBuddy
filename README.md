@@ -54,10 +54,37 @@ Custom regex-based replacements can also be configured in Settings → Text Repl
 - Xcode 26 or later
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
 
+## First-time setup
+
+Two files contain signing identity and are not committed to the repository. Copy each example and fill in your values before building.
+
+### project.yml
+
+```bash
+cp project.yml.example project.yml
+```
+
+Open `project.yml` and replace the two placeholders:
+
+| Placeholder | Where to find it |
+|---|---|
+| `XXXXXXXXXX` (Team ID) | [Apple Developer → Account → Membership](https://developer.apple.com/account) — the 10-character string next to your name |
+| `Your Provisioning Profile Name` | The name shown in Xcode → Settings → Accounts → Manage Certificates, or in the Apple Developer portal under Profiles |
+
+For local development without a Developer Program membership, leave `DEVELOPMENT_TEAM` blank and set both `CODE_SIGN_IDENTITY` values to `"-"`.
+
+### scripts/exportOptions.plist (release builds only)
+
+```bash
+cp scripts/exportOptions.plist.example scripts/exportOptions.plist
+```
+
+Open `scripts/exportOptions.plist` and replace the `XXXXXXXXXX` placeholders with your Team ID and fill in your certificate and provisioning profile names. This file is only needed when running `scripts/release.sh`.
+
 ## Building
 
-1. Clone the repository.
-2. Generate the Xcode project from `project.yml`:
+1. Complete the first-time setup above.
+2. Generate the Xcode project:
    ```
    xcodegen generate
    ```

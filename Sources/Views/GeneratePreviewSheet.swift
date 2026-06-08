@@ -72,7 +72,12 @@ struct GeneratePreviewSheet: View {
     private func generate() async {
         isLoading = true
         error = nil
-        let svc = GenerateService(dbQueue: model.dbQueue)
+        guard let dbQueue = model.dbQueue else {
+            self.error = "No database available."
+            isLoading = false
+            return
+        }
+        let svc = GenerateService(dbQueue: dbQueue)
         do {
             output = try await svc.generate()
         } catch {

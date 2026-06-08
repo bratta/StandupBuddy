@@ -43,3 +43,7 @@ Icon?
 *.pem
 *.p12
 *.mobileprovision
+
+# Signing config (contains Team ID / certificate names — create from *.example counterparts)
+project.yml
+scripts/exportOptions.plist

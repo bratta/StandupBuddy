@@ -5,8 +5,9 @@ import Observation
 @Observable
 @MainActor
 final class AppModel {
-    private let db: AppDatabase
-    let dbQueue: DatabaseQueue
+    private let manager: DatabaseManager
+
+    var dbQueue: DatabaseQueue? { manager.database?.dbQueue }
 
     // Data entry list state
     var items: [StandupItem] = []
@@ -38,9 +39,8 @@ final class AppModel {
     var openPRsHeader: String = ""
     var gratitudeHeader: String = ""
 
-    init(db: AppDatabase = .shared) {
-        self.db = db
-        self.dbQueue = db.dbQueue
+    init(manager: DatabaseManager) {
+        self.manager = manager
     }
 
     var pageCount: Int {
@@ -58,6 +58,7 @@ final class AppModel {
     }
 
     func loadItems() async {
+        guard let dbQueue else { return }
         do {
             let page = currentPage
             let size = pageSize
@@ -72,6 +73,7 @@ final class AppModel {
     }
 
     func loadSectionItems() async {
+        guard let dbQueue else { return }
         do {
             let today = Date.now
             let calc = WorkdayCalculator(dbQueue: dbQueue)
@@ -94,6 +96,7 @@ final class AppModel {
     }
 
     func loadSettings() async {
+        guard let dbQueue else { return }
         do {
             (dadJokeEnabled, formatDateEnabled, yesterdayEnabled, funFactEnabled, affirmationEnabled, emojiOfDayEnabled) =
                 try await dbQueue.read { db in (
@@ -116,12 +119,14 @@ final class AppModel {
     }
 
     func loadRepos() async {
+        guard let dbQueue else { return }
         do {
             repos = try await dbQueue.read { db in try Queries.allRepos().fetchAll(db) }
         } catch {}
     }
 
     func loadCustomReplacements() async {
+        guard let dbQueue else { return }
         do {
             customReplacements = try await dbQueue.read { db in try Queries.allReplacements().fetchAll(db) }
         } catch {}
@@ -130,6 +135,7 @@ final class AppModel {
     // MARK: - Mutations
 
     func addItem(_ item: StandupItem) async {
+        guard let dbQueue else { return }
         do {
             let copy = item
             try await dbQueue.write { db in
@@ -143,6 +149,7 @@ final class AppModel {
     }
 
     func updateItem(_ item: StandupItem) async {
+        guard let dbQueue else { return }
         do {
             let copy = item
             try await dbQueue.write { db in
@@ -155,6 +162,7 @@ final class AppModel {
     }
 
     func deleteItem(_ item: StandupItem) async {
+        guard let dbQueue else { return }
         do {
             let copy = item
             try await dbQueue.write { db in try copy.delete(db) }
@@ -180,6 +188,7 @@ final class AppModel {
     // MARK: - Setting mutations
 
     func setSetting(key: String, value: Bool) async {
+        guard let dbQueue else { return }
         do {
             let s = Setting(id: key, value: value ? "true" : "false")
             try await dbQueue.write { db in try s.save(db) }
@@ -188,6 +197,7 @@ final class AppModel {
     }
 
     func setStringSetting(key: String, value: String) async {
+        guard let dbQueue else { return }
         do {
             let s = Setting(id: key, value: value)
             try await dbQueue.write { db in try s.save(db) }
@@ -198,6 +208,7 @@ final class AppModel {
     // MARK: - Repo mutations
 
     func addRepo(_ repo: RepositoryConfig) async {
+        guard let dbQueue else { return }
         do {
             let copy = repo
             try await dbQueue.write { db in
@@ -209,6 +220,7 @@ final class AppModel {
     }
 
     func updateRepo(_ repo: RepositoryConfig) async {
+        guard let dbQueue else { return }
         do {
             let copy = repo
             try await dbQueue.write { db in
@@ -220,6 +232,7 @@ final class AppModel {
     }
 
     func deleteRepo(_ repo: RepositoryConfig) async {
+        guard let dbQueue else { return }
         do {
             let copy = repo
             try await dbQueue.write { db in try copy.delete(db) }
@@ -230,6 +243,7 @@ final class AppModel {
     // MARK: - Custom replacement mutations
 
     func addReplacement(_ r: CustomReplacement) async {
+        guard let dbQueue else { return }
         do {
             let copy = r
             try await dbQueue.write { db in
@@ -241,6 +255,7 @@ final class AppModel {
     }
 
     func updateReplacement(_ r: CustomReplacement) async {
+        guard let dbQueue else { return }
         do {
             let copy = r
             try await dbQueue.write { db in
@@ -252,6 +267,7 @@ final class AppModel {
     }
 
     func deleteReplacement(_ r: CustomReplacement) async {
+        guard let dbQueue else { return }
         do {
             let copy = r
             try await dbQueue.write { db in try copy.delete(db) }
