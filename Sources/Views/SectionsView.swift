@@ -6,11 +6,11 @@ struct SectionsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                sectionBlock(title: "Previous", items: model.previousItems)
-                sectionBlock(title: "Today", items: model.todayItems)
-                sectionBlock(title: "Blockers", items: model.blockerItems, emptyNote: "No open blockers")
+                sectionBlock(title: model.previousHeader.isEmpty ? Setting.previousHeaderDefault : model.previousHeader, items: model.previousItems)
+                sectionBlock(title: model.todayHeader.isEmpty ? Setting.todayHeaderDefault : model.todayHeader, items: model.todayItems)
+                sectionBlock(title: model.blockersHeader.isEmpty ? Setting.blockersHeaderDefault : model.blockersHeader, items: model.blockerItems, emptyNote: "No open blockers")
                 prSection
-                sectionBlock(title: "Gratitude/Joy/Others", items: model.gratitudeItems, emptyNote: "No open items")
+                sectionBlock(title: model.gratitudeHeader.isEmpty ? Setting.gratitudeHeaderDefault : model.gratitudeHeader, items: model.gratitudeItems, emptyNote: "No open items")
             }
             .padding()
         }
@@ -44,7 +44,7 @@ struct SectionsView: View {
 
     private var prSection: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Open Pull Requests")
+            Text(model.openPRsHeader.isEmpty ? Setting.openPRsHeaderDefault : model.openPRsHeader)
                 .font(.headline)
                 .bold()
             Text("(fetched live when you Generate)")

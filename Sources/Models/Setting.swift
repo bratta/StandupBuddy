@@ -27,4 +27,17 @@ extension Setting {
     static let funFactEnabledKey = "funFactEnabled"
     static let affirmationEnabledKey = "affirmationEnabled"
     static let emojiOfDayEnabledKey = "emojiOfDayEnabled"
+
+    // Section header templates (empty string = use built-in default)
+    static let previousHeaderKey = "previousHeader"
+    static let todayHeaderKey = "todayHeader"
+    static let blockersHeaderKey = "blockersHeader"
+    static let openPRsHeaderKey = "openPRsHeader"
+    static let gratitudeHeaderKey = "gratitudeHeader"
+
+    static let previousHeaderDefault = "Previous"
+    static let todayHeaderDefault = "Today"
+    static let blockersHeaderDefault = "Blockers"
+    static let openPRsHeaderDefault = "Open Pull Requests"
+    static let gratitudeHeaderDefault = "Gratitude/Joy/Others"
 }

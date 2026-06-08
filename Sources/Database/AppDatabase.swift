@@ -94,6 +94,20 @@ final class AppDatabase: Sendable {
             try db.execute(sql: "INSERT OR IGNORE INTO setting (id, value) VALUES (?, ?)", arguments: [Setting.emojiOfDayEnabledKey, "true"])
         }
 
+        migrator.registerMigration("v4_section_headers") { db in
+            // Empty value means "use built-in default"
+            let keys = [
+                Setting.previousHeaderKey,
+                Setting.todayHeaderKey,
+                Setting.blockersHeaderKey,
+                Setting.openPRsHeaderKey,
+                Setting.gratitudeHeaderKey,
+            ]
+            for key in keys {
+                try db.execute(sql: "INSERT OR IGNORE INTO setting (id, value) VALUES (?, ?)", arguments: [key, ""])
+            }
+        }
+
         try migrator.migrate(db)
     }
 }

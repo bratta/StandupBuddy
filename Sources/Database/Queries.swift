@@ -65,6 +65,11 @@ struct Queries {
         return row["value"] == "true"
     }
 
+    static func settingString(key: String, db: Database) throws -> String {
+        let row = try Row.fetchOne(db, sql: "SELECT value FROM setting WHERE id = ?", arguments: [key])
+        return row?["value"] ?? ""
+    }
+
     // MARK: - RepositoryConfig
 
     static func allRepos() -> QueryInterfaceRequest<RepositoryConfig> {

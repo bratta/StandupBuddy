@@ -9,6 +9,10 @@ struct SettingsView: View {
                 .tabItem { Label("General", systemImage: "gearshape") }
                 .environment(model)
 
+            HeaderSettingsView()
+                .tabItem { Label("Headers", systemImage: "text.alignleft") }
+                .environment(model)
+
             TextReplacementSettingsView()
                 .tabItem { Label("Replacements", systemImage: "text.magnifyingglass") }
                 .environment(model)
@@ -17,7 +21,7 @@ struct SettingsView: View {
                 .tabItem { Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
                 .environment(model)
         }
-        .frame(width: 560, height: 420)
+        .frame(width: 700, height: 420)
         .task { await model.loadAll() }
     }
 }

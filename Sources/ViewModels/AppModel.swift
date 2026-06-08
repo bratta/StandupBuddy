@@ -31,6 +31,13 @@ final class AppModel {
     var customReplacements: [CustomReplacement] = []
     var categoryFilter: Category? = nil
 
+    // Section header templates (empty = use built-in default)
+    var previousHeader: String = ""
+    var todayHeader: String = ""
+    var blockersHeader: String = ""
+    var openPRsHeader: String = ""
+    var gratitudeHeader: String = ""
+
     init(db: AppDatabase = .shared) {
         self.db = db
         self.dbQueue = db.dbQueue
@@ -96,6 +103,14 @@ final class AppModel {
                     try Queries.setting(key: Setting.funFactEnabledKey, db: db),
                     try Queries.setting(key: Setting.affirmationEnabledKey, db: db),
                     try Queries.setting(key: Setting.emojiOfDayEnabledKey, db: db)
+                ) }
+            (previousHeader, todayHeader, blockersHeader, openPRsHeader, gratitudeHeader) =
+                try await dbQueue.read { db in (
+                    try Queries.settingString(key: Setting.previousHeaderKey, db: db),
+                    try Queries.settingString(key: Setting.todayHeaderKey, db: db),
+                    try Queries.settingString(key: Setting.blockersHeaderKey, db: db),
+                    try Queries.settingString(key: Setting.openPRsHeaderKey, db: db),
+                    try Queries.settingString(key: Setting.gratitudeHeaderKey, db: db)
                 ) }
         } catch {}
     }
@@ -167,6 +182,14 @@ final class AppModel {
     func setSetting(key: String, value: Bool) async {
         do {
             let s = Setting(id: key, value: value ? "true" : "false")
+            try await dbQueue.write { db in try s.save(db) }
+            await loadSettings()
+        } catch {}
+    }
+
+    func setStringSetting(key: String, value: String) async {
+        do {
+            let s = Setting(id: key, value: value)
             try await dbQueue.write { db in try s.save(db) }
             await loadSettings()
         } catch {}

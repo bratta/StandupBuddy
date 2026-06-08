@@ -42,10 +42,25 @@ struct GenerateService {
 
         let prs = await fetchPRsSafely(repos: repos)
 
+        let (rawPrevHeader, rawTodayHeader, rawBlockersHeader, rawPRsHeader, rawGratHeader) =
+            try await dbQueue.read { db in (
+                try Queries.settingString(key: Setting.previousHeaderKey, db: db),
+                try Queries.settingString(key: Setting.todayHeaderKey, db: db),
+                try Queries.settingString(key: Setting.blockersHeaderKey, db: db),
+                try Queries.settingString(key: Setting.openPRsHeaderKey, db: db),
+                try Queries.settingString(key: Setting.gratitudeHeaderKey, db: db)
+            ) }
+
+        let prevHeader = rawPrevHeader.isEmpty ? Setting.previousHeaderDefault : try await textEngine.process(rawPrevHeader, date: today)
+        let todayHeader = rawTodayHeader.isEmpty ? Setting.todayHeaderDefault : try await textEngine.process(rawTodayHeader, date: today)
+        let blockersHeader = rawBlockersHeader.isEmpty ? Setting.blockersHeaderDefault : try await textEngine.process(rawBlockersHeader, date: today)
+        let prsHeader = rawPRsHeader.isEmpty ? Setting.openPRsHeaderDefault : try await textEngine.process(rawPRsHeader, date: today)
+        let gratHeader = rawGratHeader.isEmpty ? Setting.gratitudeHeaderDefault : try await textEngine.process(rawGratHeader, date: today)
+
         var lines: [String] = []
 
         // Previous
-        lines.append("*Previous:*")
+        lines.append("*\(prevHeader):*")
         if prevItems.isEmpty {
             lines.append("* None")
         } else {
@@ -56,7 +71,7 @@ struct GenerateService {
         }
 
         // Today
-        lines.append("*Today:*")
+        lines.append("*\(todayHeader):*")
         if todayItems.isEmpty {
             lines.append("* None")
         } else {
@@ -67,7 +82,7 @@ struct GenerateService {
         }
 
         // Blockers
-        lines.append("*Blockers:*")
+        lines.append("*\(blockersHeader):*")
         if blockerItems.isEmpty {
             lines.append("* None")
         } else {
@@ -78,7 +93,7 @@ struct GenerateService {
         }
 
         // Open Pull Requests
-        lines.append("*Open Pull Requests:*")
+        lines.append("*\(prsHeader):*")
         if prs.isEmpty {
             lines.append("* None")
         } else {
@@ -88,7 +103,7 @@ struct GenerateService {
         }
 
         // Gratitude/Joy/Others
-        lines.append("*Gratitude/Joy/Others:*")
+        lines.append("*\(gratHeader):*")
         if gratitudeItems.isEmpty {
             lines.append("* None")
         } else {
