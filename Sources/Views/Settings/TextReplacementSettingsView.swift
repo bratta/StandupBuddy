@@ -17,8 +17,8 @@ struct TextReplacementSettingsView: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(rep.name).font(.headline)
-                                Text("Pattern: \(rep.pattern)").font(.caption.monospaced()).foregroundStyle(.secondary)
-                                Text("Template: \(rep.template)").font(.caption.monospaced()).foregroundStyle(.secondary)
+                                Text("Pattern: \(rep.pattern)").font(.system(size: 12.0, design: .monospaced)).foregroundStyle(.secondary)
+                                Text("\(rep.template)").font(.system(size: 18.0, design: .monospaced)).foregroundStyle(.secondary)
                             }
                             Spacer()
                             if !rep.enabled {
