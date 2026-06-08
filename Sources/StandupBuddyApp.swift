@@ -15,6 +15,13 @@ struct StandupBuddyApp: App {
                     NotificationCenter.default.post(name: .generateStandup, object: nil)
                 }
                 .keyboardShortcut("g", modifiers: [.command, .shift])
+                Divider()
+                Button("Open SQLite Database in Finder") {
+                    let url = FileManager.default
+                        .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+                        .appendingPathComponent("StandupBuddy/standupbuddy.sqlite")
+                    NSWorkspace.shared.activateFileViewerSelecting([url])
+                }
             }
             ViewMenuCommands()
         }
