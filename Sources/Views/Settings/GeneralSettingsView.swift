@@ -31,6 +31,58 @@ struct GeneralSettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+
+                Toggle(isOn: Binding(
+                    get: { model.yesterdayEnabled },
+                    set: { v in Task { await model.setSetting(key: Setting.yesterdayEnabledKey, value: v) } }
+                )) {
+                    VStack(alignment: .leading) {
+                        Text("{yesterday}")
+                            .font(.body.monospaced())
+                        Text("Replaced with the previous workday name (e.g. Friday). Accepts an optional strftime format: {yesterday('%Y-%m-%d')}.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Toggle(isOn: Binding(
+                    get: { model.funFactEnabled },
+                    set: { v in Task { await model.setSetting(key: Setting.funFactEnabledKey, value: v) } }
+                )) {
+                    VStack(alignment: .leading) {
+                        Text("{fun_fact}")
+                            .font(.body.monospaced())
+                        Text("Replaced with a random fun fact from uselessfacts.jsph.pl")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Toggle(isOn: Binding(
+                    get: { model.affirmationEnabled },
+                    set: { v in Task { await model.setSetting(key: Setting.affirmationEnabledKey, value: v) } }
+                )) {
+                    VStack(alignment: .leading) {
+                        Text("{affirmation}")
+                            .font(.body.monospaced())
+                        Text("Replaced with a random positive affirmation from affirmations.dev")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Toggle(isOn: Binding(
+                    get: { model.emojiOfDayEnabled },
+                    set: { v in Task { await model.setSetting(key: Setting.emojiOfDayEnabledKey, value: v) } }
+                )) {
+                    VStack(alignment: .leading) {
+                        Text("{emoji_of_day}")
+                            .font(.body.monospaced())
+                        Text("Replaced with a consistent emoji for today's date — changes each day, the same for everyone.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
         .formStyle(.grouped)

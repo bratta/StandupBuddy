@@ -23,6 +23,10 @@ final class AppModel {
     // Settings
     var dadJokeEnabled: Bool = true
     var formatDateEnabled: Bool = true
+    var yesterdayEnabled: Bool = true
+    var funFactEnabled: Bool = true
+    var affirmationEnabled: Bool = true
+    var emojiOfDayEnabled: Bool = true
     var repos: [RepositoryConfig] = []
     var customReplacements: [CustomReplacement] = []
     var categoryFilter: Category? = nil
@@ -84,8 +88,15 @@ final class AppModel {
 
     func loadSettings() async {
         do {
-            dadJokeEnabled = try await dbQueue.read { db in try Queries.setting(key: Setting.dadJokeEnabledKey, db: db) }
-            formatDateEnabled = try await dbQueue.read { db in try Queries.setting(key: Setting.formatDateEnabledKey, db: db) }
+            (dadJokeEnabled, formatDateEnabled, yesterdayEnabled, funFactEnabled, affirmationEnabled, emojiOfDayEnabled) =
+                try await dbQueue.read { db in (
+                    try Queries.setting(key: Setting.dadJokeEnabledKey, db: db),
+                    try Queries.setting(key: Setting.formatDateEnabledKey, db: db),
+                    try Queries.setting(key: Setting.yesterdayEnabledKey, db: db),
+                    try Queries.setting(key: Setting.funFactEnabledKey, db: db),
+                    try Queries.setting(key: Setting.affirmationEnabledKey, db: db),
+                    try Queries.setting(key: Setting.emojiOfDayEnabledKey, db: db)
+                ) }
         } catch {}
     }
 

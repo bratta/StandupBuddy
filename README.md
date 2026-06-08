@@ -40,7 +40,11 @@ Entry text can include special tokens that are expanded at generate time:
 | Token | Expands to |
 |---|---|
 | `{dad_joke}` | A random dad joke from [icanhazdadjoke.com](https://icanhazdadjoke.com), prefixed with `:joy_cat:` |
-| `{format_date('%A')}` | The entry's date formatted using POSIX `strftime` format strings |
+| `{format_date('%A')}` | The current date formatted using POSIX `strftime` format strings |
+| `{yesterday}` | The previous workday name (e.g. `Friday`). Accepts an optional strftime format: `{yesterday('%Y-%m-%d')}` |
+| `{fun_fact}` | A random fun fact from [uselessfacts.jsph.pl](https://uselessfacts.jsph.pl) |
+| `{affirmation}` | A random positive affirmation from [affirmations.dev](https://www.affirmations.dev) |
+| `{emoji_of_day}` | A consistent emoji for today's date — changes each day, the same for everyone |
 
 Custom regex-based replacements can also be configured in Settings → Text Replacements. Each rule has a pattern and a substitution template and is applied in sort-order after the built-in tokens.
 
@@ -85,10 +89,14 @@ The token is stored in the macOS Keychain; it is never written to disk or includ
 
 ### Text replacement toggles
 
-**Settings → General** exposes toggles for the two built-in replacement tokens:
+**Settings → General** exposes toggles for all built-in replacement tokens:
 
 - **`{dad_joke}`** — on by default; disable if you prefer not to hit the external API
 - **`{format_date(...)}`** — on by default; disable to treat the token as literal text
+- **`{yesterday}`** — on by default; no network call required
+- **`{fun_fact}`** — on by default; disable if you prefer not to hit the external API
+- **`{affirmation}`** — on by default; disable if you prefer not to hit the external API
+- **`{emoji_of_day}`** — on by default; no network call required
 
 ### Custom replacements
 

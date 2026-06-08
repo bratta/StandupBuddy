@@ -23,4 +23,8 @@ extension Setting: FetchableRecord, PersistableRecord {
 extension Setting {
     static let dadJokeEnabledKey = "dadJokeEnabled"
     static let formatDateEnabledKey = "formatDateEnabled"
+    static let yesterdayEnabledKey = "yesterdayEnabled"
+    static let funFactEnabledKey = "funFactEnabled"
+    static let affirmationEnabledKey = "affirmationEnabled"
+    static let emojiOfDayEnabledKey = "emojiOfDayEnabled"
 }

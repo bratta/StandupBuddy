@@ -87,6 +87,13 @@ final class AppDatabase: Sendable {
             try db.execute(sql: "DROP TABLE IF EXISTS ptoRange")
         }
 
+        migrator.registerMigration("v3_new_builtin_replacements") { db in
+            try db.execute(sql: "INSERT OR IGNORE INTO setting (id, value) VALUES (?, ?)", arguments: [Setting.yesterdayEnabledKey, "true"])
+            try db.execute(sql: "INSERT OR IGNORE INTO setting (id, value) VALUES (?, ?)", arguments: [Setting.funFactEnabledKey, "true"])
+            try db.execute(sql: "INSERT OR IGNORE INTO setting (id, value) VALUES (?, ?)", arguments: [Setting.affirmationEnabledKey, "true"])
+            try db.execute(sql: "INSERT OR IGNORE INTO setting (id, value) VALUES (?, ?)", arguments: [Setting.emojiOfDayEnabledKey, "true"])
+        }
+
         try migrator.migrate(db)
     }
 }
