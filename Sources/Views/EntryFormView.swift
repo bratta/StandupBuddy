@@ -6,7 +6,7 @@ struct EntryFormView: View {
     @State private var date: Date = .now
     @State private var details: String = ""
     @State private var category: Category = .standup
-    @FocusState private var detailsFocused: Bool
+    @State private var focusTrigger: Int = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -28,33 +28,21 @@ struct EntryFormView: View {
                     .disabled(details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
 
-            TextEditor(text: $details)
-                .font(.body.monospaced())
-                .disableAutocorrection(true)
-                .focused($detailsFocused)
-                .frame(minHeight: 72, maxHeight: 120)
-                .padding(6)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.3)))
-                .overlay(alignment: .topLeading) {
-                    if details.isEmpty && !detailsFocused {
-                        Text("Details (markdown supported)")
-                            .foregroundStyle(.secondary)
-                            .padding(EdgeInsets(top: 12, leading: 10, bottom: 0, trailing: 0))
-                            .allowsHitTesting(false)
-                    }
-                }
-                .onKeyPress(phases: .down) { press in
-                    guard press.key == .return, press.modifiers.contains(.command) else { return .ignored }
-                    addItem()
-                    return .handled
-                }
+            MarkdownTextEditorView(
+                text: $details,
+                placeholder: "Details (markdown supported)",
+                focusTrigger: focusTrigger,
+                minEditorHeight: 72,
+                maxEditorHeight: 120,
+                onSubmit: addItem
+            )
         }
         .padding(12)
         .background(Color(nsColor: .controlBackgroundColor))
         .cornerRadius(8)
         .task {
             try? await Task.sleep(for: .milliseconds(150))
-            detailsFocused = true
+            focusTrigger += 1
         }
     }
 
@@ -66,6 +54,6 @@ struct EntryFormView: View {
         details = ""
         date = .now
         category = .standup
-        detailsFocused = true
+        focusTrigger += 1
     }
 }

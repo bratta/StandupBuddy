@@ -10,7 +10,7 @@ struct EntryRowView: View {
     @State private var editedCompleted: Bool
     @State private var isEditing: Bool = false
     @State private var showDeleteConfirm: Bool = false
-    @FocusState private var editFocused: Bool
+    @State private var editFocusTrigger: Int = 0
 
     var onEditStart: () -> Void = {}
 
@@ -114,19 +114,14 @@ struct EntryRowView: View {
                 .buttonStyle(.bordered)
             }
 
-            TextEditor(text: $editedDetails)
-                .font(.body.monospaced())
-                .disableAutocorrection(true)
-                .frame(minHeight: 60)
-                .padding(6)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.3)))
-                .focused($editFocused)
-                .onAppear { editFocused = true }
-                .onKeyPress(phases: .down) { press in
-                    guard press.key == .return, press.modifiers.contains(.command) else { return .ignored }
-                    saveEdit()
-                    return .handled
-                }
+            MarkdownTextEditorView(
+                text: $editedDetails,
+                focusTrigger: editFocusTrigger,
+                minEditorHeight: 60,
+                maxEditorHeight: 160,
+                onSubmit: saveEdit
+            )
+            .onAppear { editFocusTrigger += 1 }
         }
         .padding(.vertical, 4)
     }
