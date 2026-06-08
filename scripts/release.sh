@@ -44,12 +44,18 @@ xcodebuild \
 
 echo "→ Creating DMG"
 rm -f "$DMG_PATH"
+DMG_STAGE="build/dmg-stage"
+rm -rf "$DMG_STAGE"
+mkdir "$DMG_STAGE"
+cp -R "$APP_PATH" "$DMG_STAGE/"
+ln -s /Applications "$DMG_STAGE/Applications"
 hdiutil create \
   -volname "Standup Buddy" \
-  -srcfolder "$APP_PATH" \
+  -srcfolder "$DMG_STAGE" \
   -ov \
   -format UDZO \
   "$DMG_PATH"
+rm -rf "$DMG_STAGE"
 
 echo "→ Notarizing DMG (this may take a few minutes)"
 xcrun notarytool submit "$DMG_PATH" \
