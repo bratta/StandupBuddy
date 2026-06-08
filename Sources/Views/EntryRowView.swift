@@ -14,13 +14,6 @@ struct EntryRowView: View {
 
     var onEditStart: () -> Void = {}
 
-    private let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .none
-        return f
-    }()
-
     init(item: StandupItem, onEditStart: @escaping () -> Void = {}) {
         self.item = item
         self.onEditStart = onEditStart
@@ -66,7 +59,7 @@ struct EntryRowView: View {
                     .font(.body)
                     .lineLimit(3)
                 HStack(spacing: 6) {
-                    Text(dateFormatter.string(from: item.date))
+                    Text(item.date.formatted(.dateTime.month(.wide).day().year()))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(item.category.displayName)
@@ -92,9 +85,7 @@ struct EntryRowView: View {
     private var editingView: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                DatePicker("", selection: $editedDate, displayedComponents: .date)
-                    .labelsHidden()
-                    .frame(width: 130)
+                DatePickerButton(selection: $editedDate)
 
                 Picker("", selection: $editedCategory) {
                     ForEach(Category.allCases, id: \.self) { Text($0.displayName).tag($0) }

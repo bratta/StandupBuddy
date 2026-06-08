@@ -96,8 +96,11 @@ struct ReplacementFormSheet: View {
                 if let err = patternError {
                     Text(err).foregroundStyle(.red).font(.caption)
                 }
-                TextField("Template (use $1, $2 for captures)", text: $template)
-                    .font(.body.monospaced())
+                Section("Template (use $1, $2 for captures)") {
+                    TextEditor(text: $template)
+                        .font(.body.monospaced())
+                        .frame(minHeight: 80)
+                }
                 TextField("Sort Order", value: $sortOrder, format: .number)
                 Toggle("Enabled", isOn: $enabled)
             }
@@ -113,7 +116,7 @@ struct ReplacementFormSheet: View {
             }
         }
         .padding()
-        .frame(width: 440)
+        .frame(width: 640)
     }
 
     private func save() {

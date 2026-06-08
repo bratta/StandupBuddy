@@ -2,6 +2,8 @@
 
 A macOS app for writing daily standups. Log what you worked on, track blockers and gratitude items, connect your GitHub repositories, and generate a formatted standup message with one keystroke.
 
+![Standup Buddy](standup-buddy-goose.jpg)
+
 ## What it does
 
 Standup Buddy keeps a running log of work entries organized into three categories:

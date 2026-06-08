@@ -11,13 +11,7 @@ struct EntryFormView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
-                DatePicker("Date", selection: $date, displayedComponents: .date)
-                    .labelsHidden()
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 4)
-                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.6))
-                    .cornerRadius(6)
-                    .frame(width: 150)
+                DatePickerButton(selection: $date)
 
                 Picker("Category", selection: $category) {
                     ForEach(Category.allCases, id: \.self) { cat in
