@@ -91,7 +91,7 @@ private struct ViewMenuCommands: Commands {
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
-        CommandMenu("View") {
+        CommandGroup(after: .toolbar) {
             Button("Show API Console Log") {
                 openWindow(id: "api-console")
             }
