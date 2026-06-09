@@ -49,6 +49,7 @@ struct StandupBuddyApp: App {
             }
         }
         .commands {
+            CommandGroup(replacing: .newItem) { }
             CommandGroup(after: .newItem) {
                 Button("Generate Standup...") {
                     NotificationCenter.default.post(name: .generateStandup, object: nil)
