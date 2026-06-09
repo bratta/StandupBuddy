@@ -47,3 +47,7 @@ Icon?
 # Signing config (contains Team ID / certificate names — create from *.example counterparts)
 project.yml
 scripts/exportOptions.plist
+
+# Design handoff files (keep directory, ignore contents)
+.claude/design/**
+!.claude/design/.gitkeep
