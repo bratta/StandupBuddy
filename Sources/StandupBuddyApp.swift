@@ -55,14 +55,6 @@ struct StandupBuddyApp: App {
                     NotificationCenter.default.post(name: .generateStandup, object: nil)
                 }
                 .keyboardShortcut("g", modifiers: [.command, .shift])
-                Divider()
-                Button("Show Database in Finder") {
-                    if let folder = manager.folderURL {
-                        let dbURL = folder.appendingPathComponent(DataFolderStore.dbFilename)
-                        NSWorkspace.shared.activateFileViewerSelecting([dbURL])
-                    }
-                }
-                .disabled(manager.folderURL == nil)
             }
             ViewMenuCommands()
         }
@@ -82,6 +74,7 @@ struct StandupBuddyApp: App {
         Settings {
             SettingsView()
                 .environment(model)
+                .environment(manager)
         }
     }
 

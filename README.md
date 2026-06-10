@@ -104,6 +104,15 @@ Or run the test suite directly from Xcode with `⌘U`.
 
 ## Configuration
 
+### Database folder
+
+On first launch Standup Buddy asks you to choose a folder for its single SQLite database file. Pick a folder inside iCloud Drive to sync between Macs, or any local folder for single-machine use.
+
+You can move the database later under **Settings → Database**:
+
+- **Change Folder…** — pick a new location. If the folder already contains a compatible Standup Buddy database, the app switches to it. If the folder is empty, you're asked whether to **move your current data** into it or **start fresh** with an empty database. The change is validated before it's applied, and your previous folder is left untouched if anything goes wrong.
+- **Show in Finder** — reveal the current database file in Finder.
+
 ### GitHub integration
 
 To include your open pull requests in generated standups:

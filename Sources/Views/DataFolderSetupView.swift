@@ -40,21 +40,12 @@ struct DataFolderSetupView: View {
         panel.allowsMultipleSelection = false
         panel.prompt = "Use as Database Folder"
         panel.message = "Choose where Standup Buddy stores its database. For iCloud sync, pick a folder inside iCloud Drive."
-        panel.directoryURL = iCloudDriveURL()
+        panel.directoryURL = DataFolderStore.defaultPickerDirectory()
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
         Task {
             manager.selectFolder(url)
             await onComplete()
         }
-    }
-
-    private func iCloudDriveURL() -> URL? {
-        FileManager.default.url(
-            forUbiquityContainerIdentifier: nil
-        )?.appendingPathComponent("Documents") ??
-        FileManager.default
-            .homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs")
     }
 }
