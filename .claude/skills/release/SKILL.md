@@ -1,6 +1,6 @@
 ---
 name: release
-description: Cut a Standup Buddy release for a version (e.g. /release v1.1.1). Validates the matching GitHub milestone is fully closed, bumps the version + build number, commits/tags, builds and notarizes the DMG, and publishes a GitHub release with auto-generated changelog. Refuses (and razzes the user) if the milestone still has open issues.
+description: Cut a Standup Buddy release for a version (e.g. /release v1.1.1). Validates the matching GitHub milestone is fully closed, bumps the version + build number, tags, builds and notarizes the DMG, and publishes a GitHub release with auto-generated changelog. Refuses (and razzes the user) if the milestone still has open issues.
 ---
 
 # Release Standup Buddy
@@ -46,24 +46,32 @@ This sets `MARKETING_VERSION` to the release version and increments
 `CURRENT_PROJECT_VERSION` (Info.plist inherits both via `$(...)`), then runs
 `xcodegen generate`. Note the printed `CURRENT_PROJECT_VERSION` (the new build number).
 
-### 4. Commit + tag (local, still reversible)
+### 4. Tag the release (local, still reversible)
+The version bump produces **no committable change**: `project.yml` (the source of truth
+for `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION`) is gitignored as it carries signing
+identifiers, the generated `*.xcodeproj/project.pbxproj` is gitignored, and `Info.plist`
+only references the values via `$(...)`. So there is nothing to `git commit` — the release
+is just a tag on the current `main` HEAD. Confirm the tree is still clean, then tag:
 ```
-git add -A
-git commit -m "Release commit for $VERSION"
+git status --short          # expect no output — version files are gitignored
 git tag -a $TAG -m "$TAG_MESSAGE"
 ```
 `$TAG_MESSAGE` is `Release for Milestone: <MILESTONE_TITLE>` from preflight.
+(If `git status` *does* show tracked changes, stop and ask — that's unexpected for a bump.)
 
 ### 5. ⛔ CHECKPOINT — confirm before pushing
-Show the user `git show --stat HEAD` and the tag, and summarize: version, new build
-number, milestone, and that the next steps push to origin and start a notarized build.
-**Wait for explicit confirmation.** If they decline, tell them how to undo locally
-(`git reset --hard HEAD~1 && git tag -d $TAG`) and stop.
+Show the user `git show --stat $TAG` (the tag and the HEAD commit it points at) and
+summarize: version, new build number, milestone, and that the next steps push to origin
+and start a notarized build. **Wait for explicit confirmation.** If they decline, tell
+them how to undo locally (`git tag -d $TAG`) and stop.
 
 ### 6. Push
 ```
 git push && git push origin $TAG
 ```
+The branch push commonly reports `Everything up-to-date` (no release commit exists);
+only the tag push is expected to transfer anything. That is normal — do not treat it
+as a failure.
 
 ### 7. Build, sign, notarize, package
 ```

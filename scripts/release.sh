@@ -49,12 +49,24 @@ rm -rf "$DMG_STAGE"
 mkdir "$DMG_STAGE"
 cp -R "$APP_PATH" "$DMG_STAGE/"
 ln -s /Applications "$DMG_STAGE/Applications"
-hdiutil create \
-  -volname "Standup Buddy" \
-  -srcfolder "$DMG_STAGE" \
-  -ov \
-  -format UDZO \
-  "$DMG_PATH"
+# hdiutil intermittently fails with "Resource busy" when Spotlight/fsevents is still
+# indexing the freshly-copied .app. Retry a few times with a short settle.
+for attempt in 1 2 3 4 5; do
+  if hdiutil create \
+      -volname "Standup Buddy" \
+      -srcfolder "$DMG_STAGE" \
+      -ov \
+      -format UDZO \
+      "$DMG_PATH"; then
+    break
+  fi
+  if [[ "$attempt" == 5 ]]; then
+    echo "ERROR: hdiutil create failed after $attempt attempts" >&2
+    exit 1
+  fi
+  echo "  hdiutil create failed (attempt $attempt) — retrying in 3s…" >&2
+  sleep 3
+done
 rm -rf "$DMG_STAGE"
 
 echo "→ Notarizing DMG (this may take a few minutes)"
