@@ -27,6 +27,7 @@ extension Setting {
     static let funFactEnabledKey = "funFactEnabled"
     static let affirmationEnabledKey = "affirmationEnabled"
     static let emojiOfDayEnabledKey = "emojiOfDayEnabled"
+    static let entryDateEnabledKey = "entryDateEnabled"
 
     // Section header templates (empty string = use built-in default)
     static let previousHeaderKey = "previousHeader"

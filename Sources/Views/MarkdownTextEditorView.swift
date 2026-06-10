@@ -285,6 +285,7 @@ struct MarkdownTextEditorView: View {
                 Button("{emoji_of_day}") { bridge.insertAtCursor("{emoji_of_day}") }
                 Button("{today}") { bridge.insertAtCursor("{today}") }
                 Button("{previous}") { bridge.insertAtCursor("{previous}") }
+                Button("{entry_date}") { bridge.insertAtCursor("{entry_date}") }
             }
             if !model.customReplacements.isEmpty {
                 Divider()

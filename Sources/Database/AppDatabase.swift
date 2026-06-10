@@ -105,6 +105,10 @@ final class AppDatabase: Sendable {
             }
         }
 
+        migrator.registerMigration("v5_entry_date") { db in
+            try db.execute(sql: "INSERT OR IGNORE INTO setting (id, value) VALUES (?, ?)", arguments: [Setting.entryDateEnabledKey, "true"])
+        }
+
         try migrator.migrate(db)
     }
 }
