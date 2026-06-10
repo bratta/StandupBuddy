@@ -79,19 +79,23 @@ struct TextReplacementEngine {
     }
 
     private func replaceFormatDate(in text: String, date: Date) -> String {
-        // Capture everything between the parens; trim surrounding quote chars afterward
-        // so the regex tolerates ASCII ' and macOS smart quotes ' ' that TextEditor inserts
-        let pattern = #"\{format_date\(([^)]+)\)\}"#
+        // Matches {format_date}, {format_date('FMT')}, {today}, {today('FMT')}
+        // Trims surrounding quote chars to tolerate ASCII ' and macOS smart quotes ' '
+        let pattern = #"\{(?:format_date|today)(?:\(([^)]+)\))?\}"#
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
         let ns = text as NSString
         var result = text
         let matches = regex.matches(in: text, range: NSRange(location: 0, length: ns.length))
+        let quotes = CharacterSet(charactersIn: "'\u{2018}\u{2019}\u{201C}\u{201D}\"")
         for match in matches.reversed() {
             let fullRange = match.range
             let fmtRange = match.range(at: 1)
-            var fmt = ns.substring(with: fmtRange)
-            let quotes = CharacterSet(charactersIn: "'\u{2018}\u{2019}\u{201C}\u{201D}\"")
-            fmt = fmt.trimmingCharacters(in: quotes)
+            let fmt: String
+            if fmtRange.location != NSNotFound {
+                fmt = ns.substring(with: fmtRange).trimmingCharacters(in: quotes)
+            } else {
+                fmt = "%A"
+            }
             let formatted = StrftimeFormatter.format(date, fmt)
             result = (result as NSString).replacingCharacters(in: fullRange, with: formatted)
         }
@@ -99,7 +103,8 @@ struct TextReplacementEngine {
     }
 
     private func replaceYesterday(in text: String, date: Date) -> String {
-        let pattern = #"\{yesterday(?:\(([^)]+)\))?\}"#
+        // Matches {yesterday}, {yesterday('FMT')}, {previous}, {previous('FMT')}
+        let pattern = #"\{(?:yesterday|previous)(?:\(([^)]+)\))?\}"#
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
         let ns = text as NSString
         var result = text
