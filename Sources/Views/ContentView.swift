@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(AppModel.self) private var model
-    @State private var showGenerate = false
+    @Environment(\.openWindow) private var openWindow
     @State private var selectedTab = 0
 
     var body: some View {
@@ -17,7 +17,7 @@ struct ContentView: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("Generate") { showGenerate = true }
+                Button("Generate") { NotificationCenter.default.post(name: .generateStandup, object: nil) }
                     .keyboardShortcut("g", modifiers: [.command, .shift])
             }
             ToolbarItem(placement: .primaryAction) {
@@ -27,12 +27,8 @@ struct ContentView: View {
                 .help("Open Settings")
             }
         }
-        .sheet(isPresented: $showGenerate) {
-            GeneratePreviewSheet()
-                .environment(model)
-        }
         .onReceive(NotificationCenter.default.publisher(for: .generateStandup)) { _ in
-            showGenerate = true
+            openWindow(id: "standup-output")
         }
         .task { await model.loadAll() }
     }

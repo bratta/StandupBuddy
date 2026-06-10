@@ -15,8 +15,6 @@ struct GeneratePreviewSheet: View {
                 Text("Standup Output")
                     .font(.title2)
                     .bold()
-                Spacer()
-                Button("Close") { dismiss() }
             }
             .padding()
 
@@ -67,11 +65,15 @@ struct GeneratePreviewSheet: View {
         }
         .frame(minWidth: 500, minHeight: 400)
         .task { await generate() }
+        .onReceive(NotificationCenter.default.publisher(for: .generateStandup)) { _ in
+            Task { await generate() }
+        }
     }
 
     private func generate() async {
-        isLoading = true
+        output = ""
         error = nil
+        isLoading = true
         guard let dbQueue = model.dbQueue else {
             self.error = "No database available."
             isLoading = false

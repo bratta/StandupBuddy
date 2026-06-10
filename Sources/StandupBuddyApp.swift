@@ -67,6 +67,13 @@ struct StandupBuddyApp: App {
             ViewMenuCommands()
         }
 
+        Window("Standup Output", id: "standup-output") {
+            GeneratePreviewSheet()
+                .environment(model)
+        }
+        .defaultSize(width: 620, height: 520)
+        .windowResizability(.contentMinSize)
+
         Window("API Console Log", id: "api-console") {
             APIConsoleView()
         }
