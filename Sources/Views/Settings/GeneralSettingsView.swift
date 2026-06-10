@@ -89,6 +89,22 @@ struct GeneralSettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+
+                Toggle(isOn: Binding(
+                    get: { model.entryDateEnabled },
+                    set: { v in Task { await model.setSetting(key: Setting.entryDateEnabledKey, value: v) } }
+                )) {
+                    VStack(alignment: .leading) {
+                        Text("{entry_date}")
+                            .font(.body.monospaced())
+                        Text("Replaced with the entry's own date (e.g. 2025-06-02).")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("Accepts an optional strftime format: {entry_date('%A')}.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
         .formStyle(.grouped)

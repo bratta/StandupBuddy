@@ -65,7 +65,7 @@ struct GenerateService {
             lines.append("* None")
         } else {
             for item in prevItems {
-                let text = try await textEngine.process(item.details, date: previousDate ?? today)
+                let text = try await textEngine.process(item.details, date: previousDate ?? today, entryDate: item.date)
                 lines.append("* \(text)")
             }
         }
@@ -76,7 +76,7 @@ struct GenerateService {
             lines.append("* None")
         } else {
             for item in todayItems {
-                let text = try await textEngine.process(item.details, date: today)
+                let text = try await textEngine.process(item.details, date: today, entryDate: item.date)
                 lines.append("* \(text)")
             }
         }
@@ -87,7 +87,7 @@ struct GenerateService {
             lines.append("* None")
         } else {
             for item in blockerItems {
-                let text = try await textEngine.process(item.details, date: today)
+                let text = try await textEngine.process(item.details, date: today, entryDate: item.date)
                 lines.append("* \(text)")
             }
         }
@@ -108,7 +108,7 @@ struct GenerateService {
             lines.append("* None")
         } else {
             for item in gratitudeItems {
-                let text = try await textEngine.process(item.details, date: today)
+                let text = try await textEngine.process(item.details, date: today, entryDate: item.date)
                 lines.append("* \(text)")
             }
         }

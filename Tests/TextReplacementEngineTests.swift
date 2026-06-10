@@ -26,7 +26,8 @@ struct TextReplacementEngineTests {
                 Setting.yesterdayEnabledKey: "true",
                 Setting.funFactEnabledKey: "true",
                 Setting.affirmationEnabledKey: "true",
-                Setting.emojiOfDayEnabledKey: "true"
+                Setting.emojiOfDayEnabledKey: "true",
+                Setting.entryDateEnabledKey: "true"
             ]
             let merged = defaults.merging(settings) { _, new in new }
             for (k, v) in merged {
@@ -130,5 +131,37 @@ struct TextReplacementEngineTests {
         // monday = 2025-06-02, day 153; (153-1) % 30 = 2 → "💪"
         let result = try await engine.process("{emoji_of_day} standup", date: monday)
         #expect(result == "💪 standup")
+    }
+
+    @Test("entry_date defaults to ISO date of the entry")
+    func entryDateDefault() async throws {
+        let db = try makeDB(settings: [Setting.dadJokeEnabledKey: "false", Setting.formatDateEnabledKey: "false"])
+        let engine = TextReplacementEngine(dbQueue: db)
+        let result = try await engine.process("Logged on {entry_date}.", date: .now, entryDate: monday)
+        #expect(result == "Logged on 2025-06-02.")
+    }
+
+    @Test("entry_date accepts custom strftime format")
+    func entryDateCustomFormat() async throws {
+        let db = try makeDB(settings: [Setting.dadJokeEnabledKey: "false", Setting.formatDateEnabledKey: "false"])
+        let engine = TextReplacementEngine(dbQueue: db)
+        let result = try await engine.process("Logged on {entry_date('%A')}.", date: .now, entryDate: monday)
+        #expect(result == "Logged on Monday.")
+    }
+
+    @Test("entry_date is stripped to empty when there is no entry context")
+    func entryDateNoContext() async throws {
+        let db = try makeDB(settings: [Setting.dadJokeEnabledKey: "false", Setting.formatDateEnabledKey: "false"])
+        let engine = TextReplacementEngine(dbQueue: db)
+        let result = try await engine.process("Header {entry_date} end", date: monday, entryDate: nil)
+        #expect(result == "Header  end")
+    }
+
+    @Test("today and previous still default to day name after entry_date refactor")
+    func dateTokenDefaultsUnchanged() async throws {
+        let db = try makeDB(settings: [Setting.dadJokeEnabledKey: "false"])
+        let engine = TextReplacementEngine(dbQueue: db)
+        let result = try await engine.process("{today} after {previous}", date: monday)
+        #expect(result == "Monday after Friday")
     }
 }

@@ -13,15 +13,16 @@ struct TextReplacementEngine {
         self.dbQueue = dbQueue
     }
 
-    func process(_ text: String, date: Date = .now) async throws -> String {
-        let (dadJokeEnabled, formatDateEnabled, yesterdayEnabled, funFactEnabled, affirmationEnabled, emojiOfDayEnabled) =
+    func process(_ text: String, date: Date = .now, entryDate: Date? = nil) async throws -> String {
+        let (dadJokeEnabled, formatDateEnabled, yesterdayEnabled, funFactEnabled, affirmationEnabled, emojiOfDayEnabled, entryDateEnabled) =
             try await dbQueue.read { db in (
                 try Queries.setting(key: Setting.dadJokeEnabledKey, db: db),
                 try Queries.setting(key: Setting.formatDateEnabledKey, db: db),
                 try Queries.setting(key: Setting.yesterdayEnabledKey, db: db),
                 try Queries.setting(key: Setting.funFactEnabledKey, db: db),
                 try Queries.setting(key: Setting.affirmationEnabledKey, db: db),
-                try Queries.setting(key: Setting.emojiOfDayEnabledKey, db: db)
+                try Queries.setting(key: Setting.emojiOfDayEnabledKey, db: db),
+                try Queries.setting(key: Setting.entryDateEnabledKey, db: db)
             ) }
         let customReplacements = try await dbQueue.read { db in try Queries.enabledReplacements().fetchAll(db) }
 
@@ -57,7 +58,12 @@ struct TextReplacementEngine {
             result = replaceEmojiOfDay(in: result, date: date)
         }
 
-        // 7. Custom regex replacements (in sortOrder)
+        // 7. {entry_date} / {entry_date('FMT')}
+        if entryDateEnabled {
+            result = replaceEntryDate(in: result, entryDate: entryDate)
+        }
+
+        // 8. Custom regex replacements (in sortOrder)
         for replacement in customReplacements {
             result = applyCustomReplacement(replacement, to: result)
         }
@@ -86,10 +92,22 @@ struct TextReplacementEngine {
         replaceDateTokens(pattern: #"\{(?:yesterday|previous)(?:\(([^)]+)\))?\}"#, in: text, date: previousWorkday(from: date))
     }
 
+    // Replaces {entry_date} / {entry_date('FMT')} with the entry's own date.
+    // When there is no entry context (entryDate == nil), the token is stripped to "".
+    private func replaceEntryDate(in text: String, entryDate: Date?) -> String {
+        let pattern = #"\{entry_date(?:\(([^)]+)\))?\}"#
+        guard let entryDate else {
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
+            let range = NSRange(text.startIndex..., in: text)
+            return regex.stringByReplacingMatches(in: text, range: range, withTemplate: "")
+        }
+        return replaceDateTokens(pattern: pattern, in: text, date: entryDate, defaultFormat: "%Y-%m-%d")
+    }
+
     // Replaces all matches of a strftime-style token pattern with the formatted date.
-    // Capture group 1 is an optional format string; defaults to "%A" when absent.
+    // Capture group 1 is an optional format string; falls back to `defaultFormat` when absent.
     // Trims surrounding quote chars to tolerate ASCII ' and macOS smart quotes ' '.
-    private func replaceDateTokens(pattern: String, in text: String, date: Date) -> String {
+    private func replaceDateTokens(pattern: String, in text: String, date: Date, defaultFormat: String = "%A") -> String {
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
         let ns = text as NSString
         var result = text
@@ -99,7 +117,7 @@ struct TextReplacementEngine {
             let fmtRange = match.range(at: 1)
             let fmt = fmtRange.location != NSNotFound
                 ? ns.substring(with: fmtRange).trimmingCharacters(in: quotes)
-                : "%A"
+                : defaultFormat
             result = (result as NSString).replacingCharacters(in: match.range, with: StrftimeFormatter.format(date, fmt))
         }
         return result
