@@ -24,9 +24,12 @@ struct GeneralSettingsView: View {
                     set: { v in Task { await model.setSetting(key: Setting.formatDateEnabledKey, value: v) } }
                 )) {
                     VStack(alignment: .leading) {
-                        Text("{format_date('%A')}")
+                        Text("{today} or {format_date}")
                             .font(.body.monospaced())
-                        Text("Replaced with the formatted current date using POSIX strftime formatting.")
+                        Text("Replaced with the current workday name (e.g. Friday).")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("Accepts an optional strftime format: {today('%Y-%m-%d')}.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -37,9 +40,12 @@ struct GeneralSettingsView: View {
                     set: { v in Task { await model.setSetting(key: Setting.yesterdayEnabledKey, value: v) } }
                 )) {
                     VStack(alignment: .leading) {
-                        Text("{yesterday}")
+                        Text("{previous} or {yesterday}")
                             .font(.body.monospaced())
-                        Text("Replaced with the previous workday name (e.g. Friday). Accepts an optional strftime format: {yesterday('%Y-%m-%d')}.")
+                        Text("Replaced with the previous workday name (e.g. Friday).")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("Accepts an optional strftime format: {previous('%Y-%m-%d')}.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

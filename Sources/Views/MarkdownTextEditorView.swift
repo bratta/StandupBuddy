@@ -283,7 +283,8 @@ struct MarkdownTextEditorView: View {
                 Button("{fun_fact}") { bridge.insertAtCursor("{fun_fact}") }
                 Button("{affirmation}") { bridge.insertAtCursor("{affirmation}") }
                 Button("{emoji_of_day}") { bridge.insertAtCursor("{emoji_of_day}") }
-                Button("{format_date('')}") { bridge.insertAtCursor("{format_date('')}") }
+                Button("{today}") { bridge.insertAtCursor("{today}") }
+                Button("{previous}") { bridge.insertAtCursor("{previous}") }
             }
             if !model.customReplacements.isEmpty {
                 Divider()
