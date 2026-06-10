@@ -79,49 +79,28 @@ struct TextReplacementEngine {
     }
 
     private func replaceFormatDate(in text: String, date: Date) -> String {
-        // Matches {format_date}, {format_date('FMT')}, {today}, {today('FMT')}
-        // Trims surrounding quote chars to tolerate ASCII ' and macOS smart quotes ' '
-        let pattern = #"\{(?:format_date|today)(?:\(([^)]+)\))?\}"#
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
-        let ns = text as NSString
-        var result = text
-        let matches = regex.matches(in: text, range: NSRange(location: 0, length: ns.length))
-        let quotes = CharacterSet(charactersIn: "'\u{2018}\u{2019}\u{201C}\u{201D}\"")
-        for match in matches.reversed() {
-            let fullRange = match.range
-            let fmtRange = match.range(at: 1)
-            let fmt: String
-            if fmtRange.location != NSNotFound {
-                fmt = ns.substring(with: fmtRange).trimmingCharacters(in: quotes)
-            } else {
-                fmt = "%A"
-            }
-            let formatted = StrftimeFormatter.format(date, fmt)
-            result = (result as NSString).replacingCharacters(in: fullRange, with: formatted)
-        }
-        return result
+        replaceDateTokens(pattern: #"\{(?:format_date|today)(?:\(([^)]+)\))?\}"#, in: text, date: date)
     }
 
     private func replaceYesterday(in text: String, date: Date) -> String {
-        // Matches {yesterday}, {yesterday('FMT')}, {previous}, {previous('FMT')}
-        let pattern = #"\{(?:yesterday|previous)(?:\(([^)]+)\))?\}"#
+        replaceDateTokens(pattern: #"\{(?:yesterday|previous)(?:\(([^)]+)\))?\}"#, in: text, date: previousWorkday(from: date))
+    }
+
+    // Replaces all matches of a strftime-style token pattern with the formatted date.
+    // Capture group 1 is an optional format string; defaults to "%A" when absent.
+    // Trims surrounding quote chars to tolerate ASCII ' and macOS smart quotes ' '.
+    private func replaceDateTokens(pattern: String, in text: String, date: Date) -> String {
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
         let ns = text as NSString
         var result = text
         let matches = regex.matches(in: text, range: NSRange(location: 0, length: ns.length))
-        let yesterday = previousWorkday(from: date)
         let quotes = CharacterSet(charactersIn: "'\u{2018}\u{2019}\u{201C}\u{201D}\"")
         for match in matches.reversed() {
-            let fullRange = match.range
             let fmtRange = match.range(at: 1)
-            let fmt: String
-            if fmtRange.location != NSNotFound {
-                fmt = ns.substring(with: fmtRange).trimmingCharacters(in: quotes)
-            } else {
-                fmt = "%A"
-            }
-            let formatted = StrftimeFormatter.format(yesterday, fmt)
-            result = (result as NSString).replacingCharacters(in: fullRange, with: formatted)
+            let fmt = fmtRange.location != NSNotFound
+                ? ns.substring(with: fmtRange).trimmingCharacters(in: quotes)
+                : "%A"
+            result = (result as NSString).replacingCharacters(in: match.range, with: StrftimeFormatter.format(date, fmt))
         }
         return result
     }

@@ -39,12 +39,14 @@ Entry text can include special tokens that are expanded at generate time:
 
 | Token | Expands to |
 |---|---|
-| `{dad_joke}` | A random dad joke from [icanhazdadjoke.com](https://icanhazdadjoke.com), prefixed with `:joy_cat:` |
-| `{format_date('%A')}` | The current date formatted using POSIX `strftime` format strings |
-| `{yesterday}` | The previous workday name (e.g. `Friday`). Accepts an optional strftime format: `{yesterday('%Y-%m-%d')}` |
-| `{fun_fact}` | A random fun fact from [uselessfacts.jsph.pl](https://uselessfacts.jsph.pl) |
-| `{affirmation}` | A random positive affirmation from [affirmations.dev](https://www.affirmations.dev) |
-| `{emoji_of_day}` | A consistent emoji for today's date — changes each day, the same for everyone |
+| `{dad_joke}` | A random dad joke from [icanhazdadjoke.com](https://icanhazdadjoke.com), prefixed with `:joy_cat:`. |
+| `{today}` | The current date name (e.g. `Friday`). Accepts an optional strftime format: `{today('%A')}`. |
+| `{format_date}` | A synonym for `{today}`. |
+| `{previous}` | The previous workday name (e.g. `Friday`). Accepts an optional strftime format: `{previous('%Y-%m-%d')}`. |
+| `{yesterday}` | A synonym for `{previous}` |
+| `{fun_fact}` | A random fun fact from [uselessfacts.jsph.pl](https://uselessfacts.jsph.pl). |
+| `{affirmation}` | A random positive affirmation from [affirmations.dev](https://www.affirmations.dev). |
+| `{emoji_of_day}` | A consistent emoji for today's date — changes each day, the same for everyone. |
 
 Custom regex-based replacements can also be configured in Settings → Text Replacements. Each rule has a pattern and a substitution template and is applied in sort-order after the built-in tokens.
 
