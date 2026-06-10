@@ -30,6 +30,70 @@ final class DatabaseManager {
         needsSetup = false
     }
 
+    // Whether the given folder already contains a Standup Buddy database file.
+    // Wraps security-scoped access so it works for a freshly picked URL.
+    func targetHasDatabase(at url: URL) -> Bool {
+        let started = url.startAccessingSecurityScopedResource()
+        defer { if started { url.stopAccessingSecurityScopedResource() } }
+        let dbURL = url.appendingPathComponent(DataFolderStore.dbFilename)
+        return FileManager.default.fileExists(atPath: dbURL.path)
+    }
+
+    // Switch the active database to a new folder.
+    //
+    // - If the folder already holds a compatible database, it is opened and used.
+    // - If the folder is empty and `copyExistingData` is true, the current
+    //   database file is copied into it first (preserving the user's data).
+    // - If the folder is empty and `copyExistingData` is false, a fresh,
+    //   empty database is created there.
+    //
+    // The switch is validated before it is committed: if the database in the
+    // new folder can't be opened/migrated, the previous folder is restored and
+    // a human-readable error message is returned. Returns nil on success.
+    func changeFolder(to url: URL, copyExistingData: Bool) async -> String? {
+        let fm = FileManager.default
+        let newDBURL = url.appendingPathComponent(DataFolderStore.dbFilename)
+        let oldFolder = folderURL
+        let oldDBURL = oldFolder?.appendingPathComponent(DataFolderStore.dbFilename)
+
+        // Hold access to the new folder for the duration of the file operations.
+        let started = url.startAccessingSecurityScopedResource()
+        defer { if started { url.stopAccessingSecurityScopedResource() } }
+
+        let targetHasDB = fm.fileExists(atPath: newDBURL.path)
+
+        // Close the current connection so the source file is settled and the
+        // destination isn't opened under two connections.
+        database = nil
+
+        // Bring the existing data along when moving into an empty folder.
+        if !targetHasDB, copyExistingData, let oldDBURL, fm.fileExists(atPath: oldDBURL.path) {
+            do {
+                try fm.copyItem(at: oldDBURL, to: newDBURL)
+            } catch {
+                if let oldFolder { open(folderURL: oldFolder) }
+                return "Couldn't copy the database into the new folder: \(error.localizedDescription)"
+            }
+        }
+
+        // Validate that the database at the new location opens and migrates
+        // cleanly before committing the switch.
+        let candidate: AppDatabase
+        do {
+            candidate = try AppDatabase(path: newDBURL.path)
+        } catch {
+            if let oldFolder { open(folderURL: oldFolder) }
+            return "The database in the selected folder couldn't be opened. It may be from a newer version of Standup Buddy.\n\n\(error.localizedDescription)"
+        }
+
+        // Commit: persist the bookmark and adopt the new connection.
+        folderStore.save(url: url)
+        folderURL = url
+        database = candidate
+        needsSetup = false
+        return nil
+    }
+
     // Close the current database so iCloud can sync the at-rest file,
     // then reopen it (with NSFileCoordinator to force download of latest version).
     func reconnect() async {

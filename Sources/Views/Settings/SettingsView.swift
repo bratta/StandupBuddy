@@ -9,6 +9,10 @@ struct SettingsView: View {
                 .tabItem { Label("General", systemImage: "gearshape") }
                 .environment(model)
 
+            DatabaseSettingsView()
+                .tabItem { Label("Database", systemImage: "externaldrive") }
+                .environment(model)
+
             HeaderSettingsView()
                 .tabItem { Label("Headers", systemImage: "text.alignleft") }
                 .environment(model)

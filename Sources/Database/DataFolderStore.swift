@@ -50,6 +50,16 @@ final class DataFolderStore {
         folderURL?.appendingPathComponent(Self.dbFilename)
     }
 
+    // A sensible default directory for the folder picker: the user's iCloud
+    // Drive Documents folder, falling back to the on-disk CloudDocs path.
+    static func defaultPickerDirectory() -> URL? {
+        FileManager.default.url(forUbiquityContainerIdentifier: nil)?
+            .appendingPathComponent("Documents")
+        ?? FileManager.default
+            .homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs")
+    }
+
     // Copies the legacy Application Support database into the chosen folder
     // if no DB exists there yet. Leaves the legacy file untouched as a backup.
     func migrateLegacyIfNeeded(into folderURL: URL) {
