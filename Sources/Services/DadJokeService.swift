@@ -38,7 +38,7 @@ enum DadJokeService {
                     message: "Fetched joke"
                 )
             }
-            return response.joke
+            return response.joke.flattenedForSlack()
         } catch {
             Task { @MainActor in
                 APILogger.shared.log(

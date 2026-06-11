@@ -38,7 +38,7 @@ enum AffirmationService {
                     message: "Fetched affirmation"
                 )
             }
-            return response.affirmation
+            return response.affirmation.flattenedForSlack()
         } catch {
             Task { @MainActor in
                 APILogger.shared.log(

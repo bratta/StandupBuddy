@@ -38,7 +38,7 @@ enum FunFactService {
                     message: "Fetched fact"
                 )
             }
-            return response.text
+            return response.text.flattenedForSlack()
         } catch {
             Task { @MainActor in
                 APILogger.shared.log(
