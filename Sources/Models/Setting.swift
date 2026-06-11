@@ -29,6 +29,9 @@ extension Setting {
     static let emojiOfDayEnabledKey = "emojiOfDayEnabled"
     static let entryDateEnabledKey = "entryDateEnabled"
 
+    // Calendar import — JSON array of enabled EKCalendar identifiers (empty = all calendars)
+    static let enabledCalendarIdentifiersKey = "enabledCalendarIdentifiers"
+
     // Section header templates (empty string = use built-in default)
     static let previousHeaderKey = "previousHeader"
     static let todayHeaderKey = "todayHeader"

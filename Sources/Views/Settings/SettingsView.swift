@@ -24,6 +24,10 @@ struct SettingsView: View {
             GitHubSettingsView()
                 .tabItem { Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
                 .environment(model)
+
+            CalendarSettingsView()
+                .tabItem { Label("Calendars", systemImage: "calendar") }
+                .environment(model)
         }
         .frame(width: 700, height: 420)
         .task { await model.loadAll() }

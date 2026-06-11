@@ -6,6 +6,7 @@ import Observation
 @MainActor
 final class AppModel {
     private let manager: DatabaseManager
+    private let calendarService = CalendarService()
 
     var dbQueue: DatabaseQueue? { manager.database?.dbQueue }
 
@@ -33,6 +34,11 @@ final class AppModel {
     var customReplacements: [CustomReplacement] = []
     var categoryFilter: Category? = nil
 
+    // Calendar import
+    var calendarAuthorized: Bool = false
+    var availableCalendars: [CalendarInfo] = []
+    var enabledCalendarIdentifiers: Set<String> = []
+
     // Section header templates (empty = use built-in default)
     var previousHeader: String = ""
     var todayHeader: String = ""
@@ -56,6 +62,7 @@ final class AppModel {
         await loadSettings()
         await loadRepos()
         await loadCustomReplacements()
+        await loadCalendars()
     }
 
     func loadItems() async {
@@ -134,6 +141,43 @@ final class AppModel {
         } catch {}
     }
 
+    // MARK: - Calendar
+
+    func loadCalendars() async {
+        calendarAuthorized = calendarService.isAuthorized
+        availableCalendars = calendarService.availableCalendars()
+        let availableIDs = availableCalendars.map(\.id)
+        guard let dbQueue else {
+            enabledCalendarIdentifiers = EnabledCalendars.decode("", available: availableIDs)
+            return
+        }
+        let json = (try? await dbQueue.read { db in
+            try Queries.settingString(key: Setting.enabledCalendarIdentifiersKey, db: db)
+        }) ?? ""
+        enabledCalendarIdentifiers = EnabledCalendars.decode(json, available: availableIDs)
+    }
+
+    func requestCalendarAccess() async {
+        _ = await calendarService.requestAccess()
+        await loadCalendars()
+    }
+
+    func setCalendarEnabled(_ id: String, enabled: Bool) async {
+        if enabled {
+            enabledCalendarIdentifiers.insert(id)
+        } else {
+            enabledCalendarIdentifiers.remove(id)
+        }
+        await setStringSetting(
+            key: Setting.enabledCalendarIdentifiersKey,
+            value: EnabledCalendars.encode(enabledCalendarIdentifiers)
+        )
+    }
+
+    func fetchTodayEvents() -> [CalendarEventInfo] {
+        calendarService.todayEvents(enabledIdentifiers: enabledCalendarIdentifiers)
+    }
+
     // MARK: - Mutations
 
     func addItem(_ item: StandupItem) async {
@@ -143,6 +187,22 @@ final class AppModel {
             try await dbQueue.write { db in
                 var mutable = copy
                 try mutable.insert(db)
+            }
+            currentPage = 0
+            await loadItems()
+            await loadSectionItems()
+        } catch {}
+    }
+
+    func addItems(_ items: [StandupItem]) async {
+        guard let dbQueue, !items.isEmpty else { return }
+        do {
+            let copies = items
+            try await dbQueue.write { db in
+                for item in copies {
+                    var mutable = item
+                    try mutable.insert(db)
+                }
             }
             currentPage = 0
             await loadItems()

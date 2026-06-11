@@ -4,6 +4,7 @@ struct ContentView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openWindow) private var openWindow
     @State private var selectedTab = 0
+    @State private var showCalendarImport = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -17,6 +18,12 @@ struct ContentView: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
+                Button { showCalendarImport = true } label: {
+                    Label("Import from Calendar", systemImage: "calendar.badge.plus")
+                }
+                .help("Import today's calendar events as entries")
+            }
+            ToolbarItem(placement: .primaryAction) {
                 Button("Generate") { NotificationCenter.default.post(name: .generateStandup, object: nil) }
                     .keyboardShortcut("g", modifiers: [.command, .shift])
             }
@@ -29,6 +36,9 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .generateStandup)) { _ in
             openWindow(id: "standup-output")
+        }
+        .sheet(isPresented: $showCalendarImport) {
+            CalendarImportSheet().environment(model)
         }
         .task { await model.loadAll() }
     }
