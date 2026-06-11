@@ -33,6 +33,7 @@ final class AppModel {
     var repos: [RepositoryConfig] = []
     var customReplacements: [CustomReplacement] = []
     var categoryFilter: Category? = nil
+    var showCompletedEntries: Bool = false
 
     // Calendar import
     var calendarAuthorized: Bool = false
@@ -57,9 +58,9 @@ final class AppModel {
     // MARK: - Load
 
     func loadAll() async {
+        await loadSettings()
         await loadItems()
         await loadSectionItems()
-        await loadSettings()
         await loadRepos()
         await loadCustomReplacements()
         await loadCalendars()
@@ -71,9 +72,10 @@ final class AppModel {
             let page = currentPage
             let size = pageSize
             let filter = categoryFilter
-            let count = try await dbQueue.read { db in try Int.fetchOne(db, Queries.itemCount(category: filter)) ?? 0 }
+            let showCompleted = showCompletedEntries
+            let count = try await dbQueue.read { db in try Int.fetchOne(db, Queries.itemCount(category: filter, showCompleted: showCompleted)) ?? 0 }
             let fetched = try await dbQueue.read { db in
-                try Queries.pagedItems(page: page, pageSize: size, category: filter).fetchAll(db)
+                try Queries.pagedItems(page: page, pageSize: size, category: filter, showCompleted: showCompleted).fetchAll(db)
             }
             totalItemCount = count
             items = fetched
@@ -106,7 +108,7 @@ final class AppModel {
     func loadSettings() async {
         guard let dbQueue else { return }
         do {
-            (dadJokeEnabled, formatDateEnabled, yesterdayEnabled, funFactEnabled, affirmationEnabled, emojiOfDayEnabled, entryDateEnabled) =
+            (dadJokeEnabled, formatDateEnabled, yesterdayEnabled, funFactEnabled, affirmationEnabled, emojiOfDayEnabled, entryDateEnabled, showCompletedEntries) =
                 try await dbQueue.read { db in (
                     try Queries.setting(key: Setting.dadJokeEnabledKey, db: db),
                     try Queries.setting(key: Setting.formatDateEnabledKey, db: db),
@@ -114,7 +116,8 @@ final class AppModel {
                     try Queries.setting(key: Setting.funFactEnabledKey, db: db),
                     try Queries.setting(key: Setting.affirmationEnabledKey, db: db),
                     try Queries.setting(key: Setting.emojiOfDayEnabledKey, db: db),
-                    try Queries.setting(key: Setting.entryDateEnabledKey, db: db)
+                    try Queries.setting(key: Setting.entryDateEnabledKey, db: db),
+                    try Queries.setting(key: Setting.showCompletedEntriesKey, default: false, db: db)
                 ) }
             (previousHeader, todayHeader, blockersHeader, openPRsHeader, gratitudeHeader) =
                 try await dbQueue.read { db in (
@@ -243,6 +246,12 @@ final class AppModel {
 
     func setFilter(_ category: Category?) async {
         categoryFilter = category
+        currentPage = 0
+        await loadItems()
+    }
+
+    func setShowCompletedEntries(_ value: Bool) async {
+        await setSetting(key: Setting.showCompletedEntriesKey, value: value)
         currentPage = 0
         await loadItems()
     }

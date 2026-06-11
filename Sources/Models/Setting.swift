@@ -28,6 +28,7 @@ extension Setting {
     static let affirmationEnabledKey = "affirmationEnabled"
     static let emojiOfDayEnabledKey = "emojiOfDayEnabled"
     static let entryDateEnabledKey = "entryDateEnabled"
+    static let showCompletedEntriesKey = "showCompletedEntries"
 
     // Calendar import — JSON array of enabled EKCalendar identifiers (empty = all calendars)
     static let enabledCalendarIdentifiersKey = "enabledCalendarIdentifiers"

@@ -7,6 +7,7 @@ struct StandupBuddyApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        NSWindow.allowsAutomaticWindowTabbing = false
         let m = DatabaseManager()
         _manager = State(initialValue: m)
         _model = State(initialValue: AppModel(manager: m))
@@ -50,13 +51,14 @@ struct StandupBuddyApp: App {
         }
         .commands {
             CommandGroup(replacing: .newItem) { }
+            CommandGroup(replacing: .windowArrangement) { }
             CommandGroup(after: .newItem) {
                 Button("Generate Standup...") {
                     NotificationCenter.default.post(name: .generateStandup, object: nil)
                 }
                 .keyboardShortcut("g", modifiers: [.command, .shift])
             }
-            ViewMenuCommands()
+            ViewMenuCommands(model: model)
         }
 
         Window("Standup Output", id: "standup-output") {
@@ -90,11 +92,21 @@ struct StandupBuddyApp: App {
 
 private struct ViewMenuCommands: Commands {
     @Environment(\.openWindow) private var openWindow
+    var model: AppModel
 
     var body: some Commands {
         CommandGroup(after: .toolbar) {
-            Button("Show API Console Log") {
+            Toggle(isOn: Binding(
+                get: { model.showCompletedEntries },
+                set: { newValue in Task { await model.setShowCompletedEntries(newValue) } }
+            )) {
+                Label("Show Completed Entries", systemImage: "checklist")
+            }
+            Divider()
+            Button {
                 openWindow(id: "api-console")
+            } label: {
+                Label("Show API Console Log", systemImage: "terminal")
             }
         }
     }
