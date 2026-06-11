@@ -4,7 +4,7 @@ import GRDB
 struct Queries {
     // MARK: - StandupItem
 
-    static func pagedItems(page: Int, pageSize: Int = 20, category: Category? = nil) -> QueryInterfaceRequest<StandupItem> {
+    static func pagedItems(page: Int, pageSize: Int = 20, category: Category? = nil, showCompleted: Bool = true) -> QueryInterfaceRequest<StandupItem> {
         var request = StandupItem.order(
             StandupItem.Columns.date.desc,
             StandupItem.Columns.createdAt.desc
@@ -12,12 +12,21 @@ struct Queries {
         if let category {
             request = request.filter(StandupItem.Columns.category == category.rawValue)
         }
+        if !showCompleted {
+            request = request.filter(StandupItem.Columns.completed == false)
+        }
         return request.limit(pageSize, offset: page * pageSize)
     }
 
-    static func itemCount(category: Category? = nil) -> SQLRequest<Int> {
+    static func itemCount(category: Category? = nil, showCompleted: Bool = true) -> SQLRequest<Int> {
         if let category {
+            if !showCompleted {
+                return SQLRequest(sql: "SELECT COUNT(*) FROM standupItem WHERE category = ? AND completed = 0", arguments: [category.rawValue])
+            }
             return SQLRequest(sql: "SELECT COUNT(*) FROM standupItem WHERE category = ?", arguments: [category.rawValue])
+        }
+        if !showCompleted {
+            return SQLRequest(sql: "SELECT COUNT(*) FROM standupItem WHERE completed = 0")
         }
         return SQLRequest(sql: "SELECT COUNT(*) FROM standupItem")
     }
@@ -59,9 +68,9 @@ struct Queries {
 
     // MARK: - Settings
 
-    static func setting(key: String, db: Database) throws -> Bool {
+    static func setting(key: String, default defaultValue: Bool = true, db: Database) throws -> Bool {
         let row = try Row.fetchOne(db, sql: "SELECT value FROM setting WHERE id = ?", arguments: [key])
-        guard let row else { return true }
+        guard let row else { return defaultValue }
         return row["value"] == "true"
     }
 
