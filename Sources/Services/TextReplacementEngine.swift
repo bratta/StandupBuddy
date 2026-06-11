@@ -78,7 +78,7 @@ struct TextReplacementEngine {
         while result.contains(token) {
             let joke = try await dadJokeFetcher()
             if let range = result.range(of: token) {
-                result.replaceSubrange(range, with: ":joy_cat: \(joke)")
+                result.replaceSubrange(range, with: joke)
             }
         }
         return result

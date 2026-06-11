@@ -39,7 +39,7 @@ Entry text can include special tokens that are expanded at generate time:
 
 | Token | Expands to |
 |---|---|
-| `{dad_joke}` | A random dad joke from [icanhazdadjoke.com](https://icanhazdadjoke.com), prefixed with `:joy_cat:`. |
+| `{dad_joke}` | A random dad joke from [icanhazdadjoke.com](https://icanhazdadjoke.com). |
 | `{today}` | The current date name (e.g. `Friday`). Accepts an optional strftime format: `{today('%A')}`. |
 | `{format_date}` | A synonym for `{today}`. |
 | `{previous}` | The previous workday name (e.g. `Friday`). Accepts an optional strftime format: `{previous('%Y-%m-%d')}`. |

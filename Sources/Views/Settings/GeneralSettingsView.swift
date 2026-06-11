@@ -13,7 +13,7 @@ struct GeneralSettingsView: View {
                     VStack(alignment: .leading) {
                         Text("{dad_joke}")
                             .font(.body.monospaced())
-                        Text("Replaced with :joy_cat: and a random dad joke from icanhazdadjoke.com")
+                        Text("Replaced with a random dad joke from icanhazdadjoke.com")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

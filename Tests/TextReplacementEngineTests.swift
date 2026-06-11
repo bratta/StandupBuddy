@@ -80,13 +80,13 @@ struct TextReplacementEngineTests {
         #expect(result == input)
     }
 
-    @Test("dad_joke replaced with joy_cat prefix")
+    @Test("dad_joke replaced with result")
     func dadJokeReplacement() async throws {
         let db = try makeDB(settings: [Setting.formatDateEnabledKey: "false"])
         var engine = TextReplacementEngine(dbQueue: db)
         engine.dadJokeFetcher = { "Why don't eggs tell jokes? They'd crack up." }
-        let result = try await engine.process("Here is {dad_joke}!", date: .now)
-        #expect(result == "Here is :joy_cat: Why don't eggs tell jokes? They'd crack up.!")
+        let result = try await engine.process("Here is: {dad_joke}!", date: .now)
+        #expect(result == "Here is: Why don't eggs tell jokes? They'd crack up.!")
     }
 
     @Test("yesterday replaces with previous weekday name")
