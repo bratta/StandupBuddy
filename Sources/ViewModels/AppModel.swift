@@ -47,6 +47,13 @@ final class AppModel {
     var openPRsHeader: String = ""
     var gratitudeHeader: String = ""
 
+    // Section visibility
+    var previousEnabled: Bool = true
+    var todayEnabled: Bool = true
+    var blockersEnabled: Bool = true
+    var openPRsEnabled: Bool = true
+    var gratitudeEnabled: Bool = true
+
     init(manager: DatabaseManager) {
         self.manager = manager
     }
@@ -126,6 +133,14 @@ final class AppModel {
                     try Queries.settingString(key: Setting.blockersHeaderKey, db: db),
                     try Queries.settingString(key: Setting.openPRsHeaderKey, db: db),
                     try Queries.settingString(key: Setting.gratitudeHeaderKey, db: db)
+                ) }
+            (previousEnabled, todayEnabled, blockersEnabled, openPRsEnabled, gratitudeEnabled) =
+                try await dbQueue.read { db in (
+                    try Queries.setting(key: Setting.previousEnabledKey, db: db),
+                    try Queries.setting(key: Setting.todayEnabledKey, db: db),
+                    try Queries.setting(key: Setting.blockersEnabledKey, db: db),
+                    try Queries.setting(key: Setting.openPRsEnabledKey, db: db),
+                    try Queries.setting(key: Setting.gratitudeEnabledKey, db: db)
                 ) }
         } catch {}
     }

@@ -13,8 +13,8 @@ struct SettingsView: View {
                 .tabItem { Label("Database", systemImage: "externaldrive") }
                 .environment(model)
 
-            HeaderSettingsView()
-                .tabItem { Label("Headers", systemImage: "text.alignleft") }
+            StandupSectionsSettingsView()
+                .tabItem { Label("Sections", systemImage: "text.alignleft") }
                 .environment(model)
 
             TextReplacementSettingsView()

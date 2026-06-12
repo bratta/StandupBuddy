@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-struct HeaderSettingsView: View {
+struct StandupSectionsSettingsView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
@@ -9,7 +9,11 @@ struct HeaderSettingsView: View {
             Section {
                 Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 0) {
                     GridRow {
-                        Text("Default Header")
+                        Text("Show")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.secondary)
+                            .frame(alignment: .center)
+                        Text("Section")
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -23,37 +27,47 @@ struct HeaderSettingsView: View {
                     Divider()
                         .gridCellUnsizedAxes(.horizontal)
 
-                    headerRow(
+                    sectionRow(
                         placeholder: Setting.previousHeaderDefault,
                         value: model.previousHeader,
-                        key: Setting.previousHeaderKey
+                        headerKey: Setting.previousHeaderKey,
+                        enabled: model.previousEnabled,
+                        enabledKey: Setting.previousEnabledKey
                     )
-                    headerRow(
+                    sectionRow(
                         placeholder: Setting.todayHeaderDefault,
                         value: model.todayHeader,
-                        key: Setting.todayHeaderKey
+                        headerKey: Setting.todayHeaderKey,
+                        enabled: model.todayEnabled,
+                        enabledKey: Setting.todayEnabledKey
                     )
-                    headerRow(
+                    sectionRow(
                         placeholder: Setting.blockersHeaderDefault,
                         value: model.blockersHeader,
-                        key: Setting.blockersHeaderKey
+                        headerKey: Setting.blockersHeaderKey,
+                        enabled: model.blockersEnabled,
+                        enabledKey: Setting.blockersEnabledKey
                     )
-                    headerRow(
+                    sectionRow(
                         placeholder: Setting.openPRsHeaderDefault,
                         value: model.openPRsHeader,
-                        key: Setting.openPRsHeaderKey
+                        headerKey: Setting.openPRsHeaderKey,
+                        enabled: model.openPRsEnabled,
+                        enabledKey: Setting.openPRsEnabledKey
                     )
-                    headerRow(
+                    sectionRow(
                         placeholder: Setting.gratitudeHeaderDefault,
                         value: model.gratitudeHeader,
-                        key: Setting.gratitudeHeaderKey
+                        headerKey: Setting.gratitudeHeaderKey,
+                        enabled: model.gratitudeEnabled,
+                        enabledKey: Setting.gratitudeEnabledKey
                     )
                 }
                 .padding(.vertical, 4)
             } header: {
-                Text("Section Headers")
+                Text("Standup Sections")
             } footer: {
-                Text("Leave blank to use the default. Text replacements like {yesterday} and {format_date('%A')} are supported.")
+                Text("Disabled sections are hidden from the preview and excluded from generated standups. Leave the custom header blank to use the default. Text replacements like {yesterday} and {format_date('%A')} are supported.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -63,18 +77,28 @@ struct HeaderSettingsView: View {
     }
 
     @ViewBuilder
-    private func headerRow(placeholder: String, value: String, key: String) -> some View {
+    private func sectionRow(placeholder: String, value: String, headerKey: String, enabled: Bool, enabledKey: String) -> some View {
         GridRow {
+            Toggle("", isOn: Binding(
+                get: { enabled },
+                set: { v in Task { await model.setSetting(key: enabledKey, value: v) } }
+            ))
+            .labelsHidden()
+            .frame(alignment: .center)
+
             Text(placeholder)
+                .foregroundStyle(enabled ? .primary : .secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
+
             LeadingTextField(text: Binding(
                 get: { value },
-                set: { v in Task { await model.setStringSetting(key: key, value: v) } }
+                set: { v in Task { await model.setStringSetting(key: headerKey, value: v) } }
             ))
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 6)
             .padding(.vertical, 4)
             .background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 4))
+            .opacity(enabled ? 1 : 0.4)
         }
         .padding(.vertical, 4)
     }

@@ -45,4 +45,11 @@ extension Setting {
     static let blockersHeaderDefault = "Blockers"
     static let openPRsHeaderDefault = "Open Pull Requests"
     static let gratitudeHeaderDefault = "Gratitude/Joy/Others"
+
+    // Section visibility toggles
+    static let previousEnabledKey = "previousEnabled"
+    static let todayEnabledKey = "todayEnabled"
+    static let blockersEnabledKey = "blockersEnabled"
+    static let openPRsEnabledKey = "openPRsEnabled"
+    static let gratitudeEnabledKey = "gratitudeEnabled"
 }
