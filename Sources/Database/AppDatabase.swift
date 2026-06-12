@@ -109,6 +109,19 @@ final class AppDatabase: Sendable {
             try db.execute(sql: "INSERT OR IGNORE INTO setting (id, value) VALUES (?, ?)", arguments: [Setting.entryDateEnabledKey, "true"])
         }
 
+        migrator.registerMigration("v6_section_enabled") { db in
+            let keys = [
+                Setting.previousEnabledKey,
+                Setting.todayEnabledKey,
+                Setting.blockersEnabledKey,
+                Setting.openPRsEnabledKey,
+                Setting.gratitudeEnabledKey,
+            ]
+            for key in keys {
+                try db.execute(sql: "INSERT OR IGNORE INTO setting (id, value) VALUES (?, ?)", arguments: [key, "true"])
+            }
+        }
+
         try migrator.migrate(db)
     }
 }

@@ -51,6 +51,15 @@ struct GenerateService {
                 try Queries.settingString(key: Setting.gratitudeHeaderKey, db: db)
             ) }
 
+        let (previousEnabled, todayEnabled, blockersEnabled, openPRsEnabled, gratitudeEnabled) =
+            try await dbQueue.read { db in (
+                try Queries.setting(key: Setting.previousEnabledKey, db: db),
+                try Queries.setting(key: Setting.todayEnabledKey, db: db),
+                try Queries.setting(key: Setting.blockersEnabledKey, db: db),
+                try Queries.setting(key: Setting.openPRsEnabledKey, db: db),
+                try Queries.setting(key: Setting.gratitudeEnabledKey, db: db)
+            ) }
+
         let prevHeader = rawPrevHeader.isEmpty ? Setting.previousHeaderDefault : try await textEngine.process(rawPrevHeader, date: today)
         let todayHeader = rawTodayHeader.isEmpty ? Setting.todayHeaderDefault : try await textEngine.process(rawTodayHeader, date: today)
         let blockersHeader = rawBlockersHeader.isEmpty ? Setting.blockersHeaderDefault : try await textEngine.process(rawBlockersHeader, date: today)
@@ -60,56 +69,66 @@ struct GenerateService {
         var lines: [String] = []
 
         // Previous
-        lines.append("*\(prevHeader):*")
-        if prevItems.isEmpty {
-            lines.append("* None")
-        } else {
-            for item in prevItems {
-                let text = try await textEngine.process(item.details, date: previousDate ?? today, entryDate: item.date)
-                lines.append("* \(text)")
+        if previousEnabled {
+            lines.append("*\(prevHeader):*")
+            if prevItems.isEmpty {
+                lines.append("* None")
+            } else {
+                for item in prevItems {
+                    let text = try await textEngine.process(item.details, date: previousDate ?? today, entryDate: item.date)
+                    lines.append("* \(text)")
+                }
             }
         }
 
         // Today
-        lines.append("*\(todayHeader):*")
-        if todayItems.isEmpty {
-            lines.append("* None")
-        } else {
-            for item in todayItems {
-                let text = try await textEngine.process(item.details, date: today, entryDate: item.date)
-                lines.append("* \(text)")
+        if todayEnabled {
+            lines.append("*\(todayHeader):*")
+            if todayItems.isEmpty {
+                lines.append("* None")
+            } else {
+                for item in todayItems {
+                    let text = try await textEngine.process(item.details, date: today, entryDate: item.date)
+                    lines.append("* \(text)")
+                }
             }
         }
 
         // Blockers
-        lines.append("*\(blockersHeader):*")
-        if blockerItems.isEmpty {
-            lines.append("* None")
-        } else {
-            for item in blockerItems {
-                let text = try await textEngine.process(item.details, date: today, entryDate: item.date)
-                lines.append("* \(text)")
+        if blockersEnabled {
+            lines.append("*\(blockersHeader):*")
+            if blockerItems.isEmpty {
+                lines.append("* None")
+            } else {
+                for item in blockerItems {
+                    let text = try await textEngine.process(item.details, date: today, entryDate: item.date)
+                    lines.append("* \(text)")
+                }
             }
         }
 
         // Open Pull Requests
-        lines.append("*\(prsHeader):*")
-        if prs.isEmpty {
-            lines.append("* None")
-        } else {
-            for pr in prs {
-                lines.append("* \(pr.displayName): [\(pr.title)](\(pr.url))")
+        if openPRsEnabled {
+            lines.append("*\(prsHeader):*")
+            if prs.isEmpty {
+                lines.append("* None")
+            } else {
+                for pr in prs {
+                    lines.append("* \(pr.displayName): [\(pr.title)](\(pr.url))")
+                }
             }
         }
 
         // Gratitude/Joy/Others
-        lines.append("*\(gratHeader):*")
-        if gratitudeItems.isEmpty {
-            lines.append("* None")
-        } else {
-            for item in gratitudeItems {
-                let text = try await textEngine.process(item.details, date: today, entryDate: item.date)
-                lines.append("* \(text)")
+        if gratitudeEnabled {
+            lines.append("*\(gratHeader):*")
+            if gratitudeItems.isEmpty {
+                lines.append("* None")
+            } else {
+                for item in gratitudeItems {
+                    let text = try await textEngine.process(item.details, date: today, entryDate: item.date)
+                    lines.append("* \(text)")
+                }
             }
         }
 

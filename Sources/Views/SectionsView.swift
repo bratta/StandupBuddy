@@ -6,11 +6,21 @@ struct SectionsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                sectionBlock(title: model.previousHeader.isEmpty ? Setting.previousHeaderDefault : model.previousHeader, items: model.previousItems)
-                sectionBlock(title: model.todayHeader.isEmpty ? Setting.todayHeaderDefault : model.todayHeader, items: model.todayItems)
-                sectionBlock(title: model.blockersHeader.isEmpty ? Setting.blockersHeaderDefault : model.blockersHeader, items: model.blockerItems, emptyNote: "No open blockers")
-                prSection
-                sectionBlock(title: model.gratitudeHeader.isEmpty ? Setting.gratitudeHeaderDefault : model.gratitudeHeader, items: model.gratitudeItems, emptyNote: "No open items")
+                if model.previousEnabled {
+                    sectionBlock(title: model.previousHeader.isEmpty ? Setting.previousHeaderDefault : model.previousHeader, items: model.previousItems)
+                }
+                if model.todayEnabled {
+                    sectionBlock(title: model.todayHeader.isEmpty ? Setting.todayHeaderDefault : model.todayHeader, items: model.todayItems)
+                }
+                if model.blockersEnabled {
+                    sectionBlock(title: model.blockersHeader.isEmpty ? Setting.blockersHeaderDefault : model.blockersHeader, items: model.blockerItems, emptyNote: "No open blockers")
+                }
+                if model.openPRsEnabled {
+                    prSection
+                }
+                if model.gratitudeEnabled {
+                    sectionBlock(title: model.gratitudeHeader.isEmpty ? Setting.gratitudeHeaderDefault : model.gratitudeHeader, items: model.gratitudeItems, emptyNote: "No open items")
+                }
             }
             .padding()
         }
