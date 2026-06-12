@@ -52,7 +52,7 @@ struct SectionsView: View {
         if model.previousEnabled {
             let header = model.previousHeader.isEmpty ? Setting.previousHeaderDefault : model.previousHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(header):**")
+            lines.append("*\(header):*")
             if model.previousItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -63,7 +63,7 @@ struct SectionsView: View {
         if model.todayEnabled {
             let header = model.todayHeader.isEmpty ? Setting.todayHeaderDefault : model.todayHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(header):**")
+            lines.append("*\(header):*")
             if model.todayItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -74,7 +74,7 @@ struct SectionsView: View {
         if model.blockersEnabled {
             let header = model.blockersHeader.isEmpty ? Setting.blockersHeaderDefault : model.blockersHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(header):**")
+            lines.append("*\(header):*")
             if model.blockerItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -85,14 +85,14 @@ struct SectionsView: View {
         if model.openPRsEnabled {
             let header = model.openPRsHeader.isEmpty ? Setting.openPRsHeaderDefault : model.openPRsHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(header):**")
-            lines.append("* *(fetched live on Generate)*")
+            lines.append("*\(header):*")
+            lines.append("* (fetched live on Generate)")
         }
 
         if model.gratitudeEnabled {
             let header = model.gratitudeHeader.isEmpty ? Setting.gratitudeHeaderDefault : model.gratitudeHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(header):**")
+            lines.append("*\(header):*")
             if model.gratitudeItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -111,7 +111,7 @@ struct SectionsView: View {
 private extension Theme {
     nonisolated(unsafe) static let quickPreview = Theme()
         .text { ForegroundColor(.textPrimary); FontSize(14) }
-        .strong { FontWeight(.bold); ForegroundColor(.amber) }
+        .emphasis { FontStyle(.italic); ForegroundColor(.amber) }
         .link { ForegroundColor(.linkBlue) }
         .code {
             ForegroundColor(.tokVar)

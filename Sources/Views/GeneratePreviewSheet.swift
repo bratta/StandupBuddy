@@ -300,8 +300,8 @@ private extension Theme {
             ForegroundColor(.textPrimary)
             FontSize(14)
         }
-        .strong {
-            FontWeight(.bold)
+        .emphasis {
+            FontStyle(.italic)
             ForegroundColor(.amber)
         }
         .link {

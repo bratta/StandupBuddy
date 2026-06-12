@@ -71,7 +71,7 @@ struct GenerateService {
         // Previous
         if previousEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(prevHeader):**")
+            lines.append("*\(prevHeader):*")
             if prevItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -85,7 +85,7 @@ struct GenerateService {
         // Today
         if todayEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(todayHeader):**")
+            lines.append("*\(todayHeader):*")
             if todayItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -99,7 +99,7 @@ struct GenerateService {
         // Blockers
         if blockersEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(blockersHeader):**")
+            lines.append("*\(blockersHeader):*")
             if blockerItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -113,7 +113,7 @@ struct GenerateService {
         // Open Pull Requests
         if openPRsEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(prsHeader):**")
+            lines.append("*\(prsHeader):*")
             if prs.isEmpty {
                 lines.append("* None")
             } else {
@@ -126,7 +126,7 @@ struct GenerateService {
         // Gratitude/Joy/Others
         if gratitudeEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("**\(gratHeader):**")
+            lines.append("*\(gratHeader):*")
             if gratitudeItems.isEmpty {
                 lines.append("* None")
             } else {
