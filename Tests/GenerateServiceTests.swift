@@ -75,11 +75,11 @@ struct GenerateServiceTests {
         var svc = GenerateService(dbQueue: db)
         svc.prFetcher = { _ in [] }
         let output = try await svc.generate(today: Self.monday)
-        #expect(output.contains("*Previous:*\n* None"))
-        #expect(output.contains("*Today:*\n* None"))
-        #expect(output.contains("*Blockers:*\n* None"))
-        #expect(output.contains("*Open Pull Requests:*\n* None"))
-        #expect(output.contains("*Gratitude/Joy/Others:*\n* None"))
+        #expect(output.contains("**Previous:**\n* None"))
+        #expect(output.contains("**Today:**\n* None"))
+        #expect(output.contains("**Blockers:**\n* None"))
+        #expect(output.contains("**Open Pull Requests:**\n* None"))
+        #expect(output.contains("**Gratitude/Joy/Others:**\n* None"))
     }
 
     @Test("today and previous items appear in correct sections")
@@ -91,8 +91,8 @@ struct GenerateServiceTests {
         var svc = GenerateService(dbQueue: db)
         svc.prFetcher = { _ in [] }
         let output = try await svc.generate(today: Self.monday)
-        #expect(output.contains("*Previous:*\n* Friday task"))
-        #expect(output.contains("*Today:*\n* Monday task"))
+        #expect(output.contains("**Previous:**\n* Friday task"))
+        #expect(output.contains("**Today:**\n* Monday task"))
     }
 
     @Test("open blockers and gratitude appear")
@@ -101,8 +101,8 @@ struct GenerateServiceTests {
         var svc = GenerateService(dbQueue: db)
         svc.prFetcher = { _ in [] }
         let output = try await svc.generate(today: Self.monday)
-        #expect(output.contains("*Blockers:*\n* Waiting on PR review"))
-        #expect(output.contains("*Gratitude/Joy/Others:*\n* Great team!"))
+        #expect(output.contains("**Blockers:**\n* Waiting on PR review"))
+        #expect(output.contains("**Gratitude/Joy/Others:**\n* Great team!"))
     }
 
     @Test("pull requests are listed with display name")

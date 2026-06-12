@@ -1,66 +1,122 @@
 import SwiftUI
+import MarkdownUI
 
 struct SectionsView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                if model.previousEnabled {
-                    sectionBlock(title: model.previousHeader.isEmpty ? Setting.previousHeaderDefault : model.previousHeader, items: model.previousItems)
-                }
-                if model.todayEnabled {
-                    sectionBlock(title: model.todayHeader.isEmpty ? Setting.todayHeaderDefault : model.todayHeader, items: model.todayItems)
-                }
-                if model.blockersEnabled {
-                    sectionBlock(title: model.blockersHeader.isEmpty ? Setting.blockersHeaderDefault : model.blockersHeader, items: model.blockerItems, emptyNote: "No open blockers")
-                }
-                if model.openPRsEnabled {
-                    prSection
-                }
-                if model.gratitudeEnabled {
-                    sectionBlock(title: model.gratitudeHeader.isEmpty ? Setting.gratitudeHeaderDefault : model.gratitudeHeader, items: model.gratitudeItems, emptyNote: "No open items")
-                }
+        VStack(spacing: 0) {
+            ScrollView {
+                Markdown(highlightedMarkdown)
+                    .markdownTheme(.quickPreview)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 24)
+                    .padding(.horizontal, 28)
+                    .padding(.bottom, 30)
             }
-            .padding()
+            .background(Color.cardSurface)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            Divider().overlay(Color.softBorder)
+
+            HStack(spacing: 6) {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Color.textTertiary)
+                Text("Quick preview · text replacement placeholders shown as-is · no API calls made")
+                    .font(.system(size: 11.5, weight: .medium))
+                    .foregroundStyle(Color.textTertiary)
+                Spacer()
+            }
+            .padding(.vertical, 10)
+            .padding(.horizontal, 18)
+            .background(Color.bgRaised)
         }
         .task { await model.loadSectionItems() }
     }
 
-    private func sectionBlock(title: String, items: [StandupItem], emptyNote: String = "No entries") -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.headline)
-                .bold()
+    private var highlightedMarkdown: String {
+        let raw = buildMarkdown()
+        guard let regex = try? NSRegularExpression(pattern: #"\{[^}\n]+\}"#) else { return raw }
+        let ns = raw as NSString
+        return regex.stringByReplacingMatches(
+            in: raw,
+            range: NSRange(location: 0, length: ns.length),
+            withTemplate: "`$0`"
+        )
+    }
 
-            if items.isEmpty {
-                Text("• \(emptyNote)")
-                    .foregroundStyle(.secondary)
-                    .italic()
+    private func buildMarkdown() -> String {
+        var lines: [String] = []
+
+        if model.previousEnabled {
+            let header = model.previousHeader.isEmpty ? Setting.previousHeaderDefault : model.previousHeader
+            if !lines.isEmpty { lines.append("") }
+            lines.append("**\(header):**")
+            if model.previousItems.isEmpty {
+                lines.append("* None")
             } else {
-                ForEach(items) { item in
-                    HStack(alignment: .top) {
-                        Text("•")
-                        Text(item.details)
-                            .font(.body)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
+                for item in model.previousItems { lines.append("* \(item.details)") }
             }
-
-            Divider()
         }
-    }
 
-    private var prSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(model.openPRsHeader.isEmpty ? Setting.openPRsHeaderDefault : model.openPRsHeader)
-                .font(.headline)
-                .bold()
-            Text("(fetched live when you Generate)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Divider()
+        if model.todayEnabled {
+            let header = model.todayHeader.isEmpty ? Setting.todayHeaderDefault : model.todayHeader
+            if !lines.isEmpty { lines.append("") }
+            lines.append("**\(header):**")
+            if model.todayItems.isEmpty {
+                lines.append("* None")
+            } else {
+                for item in model.todayItems { lines.append("* \(item.details)") }
+            }
         }
+
+        if model.blockersEnabled {
+            let header = model.blockersHeader.isEmpty ? Setting.blockersHeaderDefault : model.blockersHeader
+            if !lines.isEmpty { lines.append("") }
+            lines.append("**\(header):**")
+            if model.blockerItems.isEmpty {
+                lines.append("* None")
+            } else {
+                for item in model.blockerItems { lines.append("* \(item.details)") }
+            }
+        }
+
+        if model.openPRsEnabled {
+            let header = model.openPRsHeader.isEmpty ? Setting.openPRsHeaderDefault : model.openPRsHeader
+            if !lines.isEmpty { lines.append("") }
+            lines.append("**\(header):**")
+            lines.append("* *(fetched live on Generate)*")
+        }
+
+        if model.gratitudeEnabled {
+            let header = model.gratitudeHeader.isEmpty ? Setting.gratitudeHeaderDefault : model.gratitudeHeader
+            if !lines.isEmpty { lines.append("") }
+            lines.append("**\(header):**")
+            if model.gratitudeItems.isEmpty {
+                lines.append("* None")
+            } else {
+                for item in model.gratitudeItems { lines.append("* \(item.details)") }
+            }
+        }
+
+        if lines.isEmpty {
+            return "*(No sections enabled)*"
+        }
+
+        return lines.joined(separator: "\n")
     }
+}
+
+private extension Theme {
+    nonisolated(unsafe) static let quickPreview = Theme()
+        .text { ForegroundColor(.textPrimary); FontSize(14) }
+        .strong { FontWeight(.bold); ForegroundColor(.amber) }
+        .link { ForegroundColor(.linkBlue) }
+        .code {
+            ForegroundColor(.tokVar)
+            BackgroundColor(Color.tokVar.opacity(0.12))
+            FontFamilyVariant(.monospaced)
+            FontSize(.em(0.9))
+        }
 }
