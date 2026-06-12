@@ -30,6 +30,10 @@ extension Setting {
     static let entryDateEnabledKey = "entryDateEnabled"
     static let showCompletedEntriesKey = "showCompletedEntries"
 
+    // Markdown engine — stores a MarkdownFlavor rawValue ("slack" | "github")
+    static let markdownFormatKey = "markdownFormat"
+    static let markdownFormatDefault = MarkdownFlavor.slack.rawValue
+
     // Calendar import — JSON array of enabled EKCalendar identifiers (empty = all calendars)
     static let enabledCalendarIdentifiersKey = "enabledCalendarIdentifiers"
 

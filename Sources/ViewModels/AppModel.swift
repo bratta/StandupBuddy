@@ -34,6 +34,7 @@ final class AppModel {
     var customReplacements: [CustomReplacement] = []
     var categoryFilter: Category? = nil
     var showCompletedEntries: Bool = false
+    var markdownFlavor: MarkdownFlavor = .slack
 
     // Calendar import
     var calendarAuthorized: Bool = false
@@ -142,6 +143,10 @@ final class AppModel {
                     try Queries.setting(key: Setting.openPRsEnabledKey, db: db),
                     try Queries.setting(key: Setting.gratitudeEnabledKey, db: db)
                 ) }
+            let flavorRaw = try await dbQueue.read { db in
+                try Queries.settingString(key: Setting.markdownFormatKey, db: db)
+            }
+            markdownFlavor = MarkdownFlavor(rawValue: flavorRaw) ?? .slack
         } catch {}
     }
 

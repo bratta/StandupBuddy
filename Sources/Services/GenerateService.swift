@@ -60,6 +60,10 @@ struct GenerateService {
                 try Queries.setting(key: Setting.gratitudeEnabledKey, db: db)
             ) }
 
+        let flavor = MarkdownFlavor(rawValue:
+            try await dbQueue.read { db in try Queries.settingString(key: Setting.markdownFormatKey, db: db) }
+        ) ?? .slack
+
         let prevHeader = rawPrevHeader.isEmpty ? Setting.previousHeaderDefault : try await textEngine.process(rawPrevHeader, date: today)
         let todayHeader = rawTodayHeader.isEmpty ? Setting.todayHeaderDefault : try await textEngine.process(rawTodayHeader, date: today)
         let blockersHeader = rawBlockersHeader.isEmpty ? Setting.blockersHeaderDefault : try await textEngine.process(rawBlockersHeader, date: today)
@@ -71,7 +75,7 @@ struct GenerateService {
         // Previous
         if previousEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(prevHeader):*")
+            lines.append(flavor.header(prevHeader))
             if prevItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -85,7 +89,7 @@ struct GenerateService {
         // Today
         if todayEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(todayHeader):*")
+            lines.append(flavor.header(todayHeader))
             if todayItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -99,7 +103,7 @@ struct GenerateService {
         // Blockers
         if blockersEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(blockersHeader):*")
+            lines.append(flavor.header(blockersHeader))
             if blockerItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -113,12 +117,12 @@ struct GenerateService {
         // Open Pull Requests
         if openPRsEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(prsHeader):*")
+            lines.append(flavor.header(prsHeader))
             if prs.isEmpty {
                 lines.append("* None")
             } else {
                 for pr in prs {
-                    lines.append("* \(pr.displayName): [\(pr.title)](\(pr.url))")
+                    lines.append("* \(pr.displayName): \(flavor.link(text: pr.title, url: pr.url))")
                 }
             }
         }
@@ -126,7 +130,7 @@ struct GenerateService {
         // Gratitude/Joy/Others
         if gratitudeEnabled {
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(gratHeader):*")
+            lines.append(flavor.header(gratHeader))
             if gratitudeItems.isEmpty {
                 lines.append("* None")
             } else {

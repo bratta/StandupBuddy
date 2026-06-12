@@ -36,11 +36,13 @@ struct SectionsView: View {
     }
 
     private var highlightedMarkdown: String {
-        let raw = buildMarkdown()
-        guard let regex = try? NSRegularExpression(pattern: #"\{[^}\n]+\}"#) else { return raw }
-        let ns = raw as NSString
+        // Convert to GFM first (no-op for GitHub) so bold markers stay adjacent — before the
+        // placeholder backtick-wrapping below inserts code spans that would otherwise split them.
+        let gfm = model.markdownFlavor.renderableGFM(from: buildMarkdown())
+        guard let regex = try? NSRegularExpression(pattern: #"\{[^}\n]+\}"#) else { return gfm }
+        let ns = gfm as NSString
         return regex.stringByReplacingMatches(
-            in: raw,
+            in: gfm,
             range: NSRange(location: 0, length: ns.length),
             withTemplate: "`$0`"
         )
@@ -52,7 +54,7 @@ struct SectionsView: View {
         if model.previousEnabled {
             let header = model.previousHeader.isEmpty ? Setting.previousHeaderDefault : model.previousHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(header):*")
+            lines.append(model.markdownFlavor.header(header))
             if model.previousItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -63,7 +65,7 @@ struct SectionsView: View {
         if model.todayEnabled {
             let header = model.todayHeader.isEmpty ? Setting.todayHeaderDefault : model.todayHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(header):*")
+            lines.append(model.markdownFlavor.header(header))
             if model.todayItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -74,7 +76,7 @@ struct SectionsView: View {
         if model.blockersEnabled {
             let header = model.blockersHeader.isEmpty ? Setting.blockersHeaderDefault : model.blockersHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(header):*")
+            lines.append(model.markdownFlavor.header(header))
             if model.blockerItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -85,14 +87,14 @@ struct SectionsView: View {
         if model.openPRsEnabled {
             let header = model.openPRsHeader.isEmpty ? Setting.openPRsHeaderDefault : model.openPRsHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(header):*")
+            lines.append(model.markdownFlavor.header(header))
             lines.append("* (fetched live on Generate)")
         }
 
         if model.gratitudeEnabled {
             let header = model.gratitudeHeader.isEmpty ? Setting.gratitudeHeaderDefault : model.gratitudeHeader
             if !lines.isEmpty { lines.append("") }
-            lines.append("*\(header):*")
+            lines.append(model.markdownFlavor.header(header))
             if model.gratitudeItems.isEmpty {
                 lines.append("* None")
             } else {
@@ -111,7 +113,8 @@ struct SectionsView: View {
 private extension Theme {
     nonisolated(unsafe) static let quickPreview = Theme()
         .text { ForegroundColor(.textPrimary); FontSize(14) }
-        .emphasis { FontStyle(.italic); ForegroundColor(.amber) }
+        .emphasis { FontStyle(.italic) }
+        .strong { FontWeight(.semibold); ForegroundColor(.amber) }
         .link { ForegroundColor(.linkBlue) }
         .code {
             ForegroundColor(.tokVar)
