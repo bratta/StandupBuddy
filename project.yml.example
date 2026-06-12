@@ -11,6 +11,9 @@ packages:
   GRDB:
     url: https://github.com/groue/GRDB.swift
     from: "6.29.3"
+  MarkdownUI:
+    url: https://github.com/gonzalezreal/swift-markdown-ui
+    from: "2.4.0"
 
 targets:
   StandupBuddy:
@@ -42,6 +45,7 @@ targets:
 
     dependencies:
       - package: GRDB
+      - package: MarkdownUI
 
   StandupBuddyTests:
     type: bundle.unit-test

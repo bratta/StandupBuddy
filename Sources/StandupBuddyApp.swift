@@ -1,7 +1,23 @@
 import SwiftUI
 
+private final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var didHandleLaunch = false
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        guard !didHandleLaunch else { return }
+        didHandleLaunch = true
+        // Close any state-restored standup output window — it should only open on explicit request.
+        DispatchQueue.main.async {
+            NSApp.windows
+                .filter { $0.title == "Standup Output" }
+                .forEach { $0.close() }
+        }
+    }
+}
+
 @main
 struct StandupBuddyApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var manager: DatabaseManager
     @State private var model: AppModel
     @Environment(\.scenePhase) private var scenePhase
@@ -65,7 +81,7 @@ struct StandupBuddyApp: App {
             GeneratePreviewSheet()
                 .environment(model)
         }
-        .defaultSize(width: 620, height: 520)
+        .defaultSize(width: 820, height: 540)
         .windowResizability(.contentMinSize)
 
         Window("API Console Log", id: "api-console") {

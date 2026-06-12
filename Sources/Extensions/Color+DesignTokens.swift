@@ -17,4 +17,8 @@ public extension Color {
     static var accentSoft: Color { .accentColor.opacity(0.16) }
     static var accentLine: Color { .accentColor.opacity(0.42) }
     static let accentDeep   = Color(red: 0.016, green: 0.412, blue: 0.820)
+    // Output window design tokens
+    static let bgRaised     = Color(red: 0.200, green: 0.169, blue: 0.161)  // #332B29
+    static let amber        = Color(red: 0.910, green: 0.635, blue: 0.298)  // #E8A24C
+    static let linkBlue     = Color(red: 0.369, green: 0.608, blue: 0.933)  // #5E9BEE
 }
