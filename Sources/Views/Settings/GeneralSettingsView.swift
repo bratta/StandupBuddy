@@ -5,6 +5,24 @@ struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
+            Section("Markdown Engine") {
+                Picker(selection: Binding(
+                    get: { model.markdownFlavor },
+                    set: { v in Task { await model.setStringSetting(key: Setting.markdownFormatKey, value: v.rawValue) } }
+                )) {
+                    ForEach(MarkdownFlavor.allCases) { flavor in
+                        Text(flavor.displayName).tag(flavor)
+                    }
+                } label: {
+                    VStack(alignment: .leading) {
+                        Text("Formatting style")
+                        Text("Slack uses single-asterisk bold and does not support underline.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
             Section("Built-in Text Replacements") {
                 Toggle(isOn: Binding(
                     get: { model.dadJokeEnabled },

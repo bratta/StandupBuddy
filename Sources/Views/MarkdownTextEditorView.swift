@@ -202,18 +202,26 @@ struct MarkdownTextEditorView: View {
 
     @ViewBuilder
     private var toolbar: some View {
+        let flavor = model.markdownFlavor
         HStack(spacing: 1) {
             toolbarBtn(systemImage: "bold", tip: "Bold") {
-                bridge.wrapSelection(prefix: "**", suffix: "**")
+                bridge.wrapSelection(prefix: flavor.bold.prefix, suffix: flavor.bold.suffix)
             }
             toolbarBtn(systemImage: "italic", tip: "Italic") {
-                bridge.wrapSelection(prefix: "*", suffix: "*")
+                bridge.wrapSelection(prefix: flavor.italic.prefix, suffix: flavor.italic.suffix)
             }
-            toolbarBtn(systemImage: "underline", tip: "Underline") {
-                bridge.wrapSelection(prefix: "<u>", suffix: "</u>")
+            toolbarBtn(
+                systemImage: "underline",
+                tip: flavor.underline == nil ? "Underline (not supported by \(flavor.displayName))" : "Underline"
+            ) {
+                if let u = flavor.underline {
+                    bridge.wrapSelection(prefix: u.prefix, suffix: u.suffix)
+                }
             }
+            .disabled(flavor.underline == nil)
+            .opacity(flavor.underline == nil ? 0.4 : 1)
             toolbarBtn(systemImage: "strikethrough", tip: "Strikethrough") {
-                bridge.wrapSelection(prefix: "~~", suffix: "~~")
+                bridge.wrapSelection(prefix: flavor.strikethrough.prefix, suffix: flavor.strikethrough.suffix)
             }
 
             toolbarDivider
@@ -230,10 +238,10 @@ struct MarkdownTextEditorView: View {
             }
 
             toolbarCodeBtn(label: "`", tip: "Inline Code") {
-                bridge.wrapSelection(prefix: "`", suffix: "`")
+                bridge.wrapSelection(prefix: flavor.inlineCode.prefix, suffix: flavor.inlineCode.suffix)
             }
             toolbarCodeBtn(label: "```", tip: "Code Block") {
-                bridge.wrapSelection(prefix: "```\n", suffix: "\n```")
+                bridge.wrapSelection(prefix: flavor.codeBlock.prefix, suffix: flavor.codeBlock.suffix)
             }
 
             toolbarDivider
@@ -328,7 +336,7 @@ struct MarkdownTextEditorView: View {
 
     private func confirmLink() {
         let display = pendingLinkText.isEmpty ? "link" : pendingLinkText
-        bridge.replaceRange(pendingLinkRange, with: "[\(display)](\(linkURL))")
+        bridge.replaceRange(pendingLinkRange, with: model.markdownFlavor.link(text: display, url: linkURL))
         showLinkPopover = false
         linkURL = ""
         bridge.focus()

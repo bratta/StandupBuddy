@@ -63,7 +63,7 @@ struct GeneratePreviewSheet: View {
             }
             HStack {
                 Spacer()
-                Text("GitHub-Flavored Markdown")
+                Text(model.markdownFlavor.displayName)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(Color.textTertiary)
                     .padding(.trailing, 18)
@@ -151,7 +151,7 @@ struct GeneratePreviewSheet: View {
 
     private var previewBody: some View {
         ScrollView {
-            Markdown(output)
+            Markdown(model.markdownFlavor.renderableGFM(from: output))
                 .markdownTheme(.standupOutput)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 24)
@@ -302,6 +302,9 @@ private extension Theme {
         }
         .emphasis {
             FontStyle(.italic)
+        }
+        .strong {
+            FontWeight(.semibold)
             ForegroundColor(.amber)
         }
         .link {
