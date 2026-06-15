@@ -119,8 +119,8 @@ struct GenerateServiceTests {
         var svc = GenerateService(dbQueue: db)
         svc.prFetcher = { _ in [PullRequest(title: "Fix the thing", url: "https://github.com/org/repo/pull/1", displayName: "My Repo")] }
         let output = try await svc.generate(today: Self.monday)
-        // Default flavor is Slack → angle-bracket link
-        #expect(output.contains("* My Repo: <https://github.com/org/repo/pull/1|Fix the thing>"))
+        // Both flavors emit CommonMark links (the Slack composer renders these, not <url|text>)
+        #expect(output.contains("* My Repo: [Fix the thing](https://github.com/org/repo/pull/1)"))
     }
 
     @Test("GitHub flavor uses double-asterisk headers and markdown links")
@@ -138,7 +138,7 @@ struct GenerateServiceTests {
         #expect(output.contains("* My Repo: [Fix the thing](https://github.com/org/repo/pull/1)"))
     }
 
-    @Test("Slack flavor uses single-asterisk headers and angle-bracket links")
+    @Test("Slack flavor uses single-asterisk headers")
     func slackFlavor() async throws {
         let db = try makeDB(markdownFormat: .slack)
         let svc = GenerateService(dbQueue: db)

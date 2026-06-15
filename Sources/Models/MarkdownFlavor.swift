@@ -3,9 +3,11 @@ import Foundation
 /// The markdown dialect Standup Buddy emits and renders.
 ///
 /// Slack uses a `mrkdwn` variant (single-asterisk bold, underscore italics, single-tilde
-/// strikethrough, `<url|text>` links, and no underline). GitHub-Flavored Markdown (GFM) uses the
-/// more familiar CommonMark-derived tokens. This type is the single source of truth for those
-/// tokens so the editor toolbar, the generator, and the previews all agree.
+/// strikethrough, and no underline). Links are the exception: both flavors emit CommonMark
+/// `[text](url)` because the Slack composer renders that (its legacy `<url|text>` form only works
+/// for API-posted messages). GitHub-Flavored Markdown (GFM) uses the more familiar
+/// CommonMark-derived tokens. This type is the single source of truth for those tokens so the
+/// editor toolbar, the generator, and the previews all agree.
 enum MarkdownFlavor: String, CaseIterable, Sendable, Identifiable {
     case slack
     case github
@@ -57,11 +59,12 @@ enum MarkdownFlavor: String, CaseIterable, Sendable, Identifiable {
 
     // MARK: - Composite formatting
 
+    /// Both flavors use CommonMark `[text](url)` links. Slack's legacy `mrkdwn` link form
+    /// (`<url|text>`) only renders for messages posted through the API — pasting it into the Slack
+    /// message composer shows the raw angle-bracket text. The composer (like GitHub) auto-links
+    /// `[text](url)`, so that's what we emit.
     func link(text: String, url: String) -> String {
-        switch self {
-        case .slack: return "<\(url)|\(text)>"
-        case .github: return "[\(text)](\(url))"
-        }
+        "[\(text)](\(url))"
     }
 
     /// A bold-wrapped section header, e.g. `*Today:*` (Slack) or `**Today:**` (GitHub).
