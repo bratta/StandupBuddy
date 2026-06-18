@@ -135,16 +135,13 @@ struct GeneratePreviewSheet: View {
     }
 
     private var textBody: some View {
-        ScrollView {
-            Text(output)
-                .font(.system(size: 12.5, design: .monospaced))
-                .foregroundStyle(Color.codeText)
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 22)
-                .padding(.horizontal, 26)
-                .padding(.bottom, 26)
-        }
+        MarkdownTextEditorView(
+            text: $output,
+            placeholder: "Your standup output…",
+            minEditorHeight: 200,
+            maxEditorHeight: .infinity
+        )
+        .padding(20)
         .background(Color.cardSurface)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
