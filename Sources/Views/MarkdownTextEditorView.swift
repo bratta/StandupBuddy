@@ -246,6 +246,13 @@ struct MarkdownTextEditorView: View {
 
             toolbarDivider
 
+            toolbarBtn(systemImage: "face.smiling", tip: "Insert Emoji") {
+                bridge.focus()
+                NSApp.orderFrontCharacterPalette(nil)
+            }
+
+            toolbarDivider
+
             replacementsMenu
 
             Spacer()
