@@ -20,6 +20,7 @@ struct StandupBuddyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var manager: DatabaseManager
     @State private var model: AppModel
+    @State private var updateChecker = UpdateChecker()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -66,6 +67,14 @@ struct StandupBuddyApp: App {
             }
         }
         .commands {
+            CommandGroup(after: .appInfo) {
+                Button {
+                    Task { await updateChecker.checkForUpdates() }
+                } label: {
+                    Label("Check for Updates…", systemImage: "arrow.triangle.2.circlepath")
+                }
+                .disabled(updateChecker.isChecking)
+            }
             CommandGroup(replacing: .newItem) { }
             CommandGroup(replacing: .windowArrangement) { }
             CommandGroup(after: .newItem) {
@@ -125,6 +134,62 @@ private struct ViewMenuCommands: Commands {
                 Label("Show API Console Log", systemImage: "terminal")
             }
         }
+    }
+}
+
+/// Drives the user-initiated "Check for Updates…" flow and presents the result
+/// with an NSAlert (mirroring StandupBuddyApp.showConflictAlert).
+@MainActor
+@Observable
+final class UpdateChecker {
+    private(set) var isChecking = false
+
+    func checkForUpdates() async {
+        guard !isChecking else { return }
+        isChecking = true
+        defer { isChecking = false }
+
+        do {
+            let result = try await UpdateService.checkForUpdate()
+            switch result {
+            case .upToDate(let current):
+                presentUpToDate(current: current)
+            case .updateAvailable(let current, let latest, let releaseURL):
+                presentUpdateAvailable(current: current, latest: latest, releaseURL: releaseURL)
+            }
+        } catch {
+            presentError(error)
+        }
+    }
+
+    private func presentUpToDate(current: String) {
+        let alert = NSAlert()
+        alert.messageText = "You're up to date"
+        alert.informativeText = "Standup Buddy \(current) is the latest version."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+
+    private func presentUpdateAvailable(current: String, latest: String, releaseURL: URL) {
+        let alert = NSAlert()
+        alert.messageText = "Update Available"
+        alert.informativeText = "Standup Buddy \(latest) is available — you have \(current)."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "View Release")
+        alert.addButton(withTitle: "Close")
+        if alert.runModal() == .alertFirstButtonReturn {
+            NSWorkspace.shared.open(releaseURL)
+        }
+    }
+
+    private func presentError(_ error: Error) {
+        let alert = NSAlert()
+        alert.messageText = "Couldn't Check for Updates"
+        alert.informativeText = error.localizedDescription
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
     }
 }
 
