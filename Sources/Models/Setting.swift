@@ -56,4 +56,7 @@ extension Setting {
     static let blockersEnabledKey = "blockersEnabled"
     static let openPRsEnabledKey = "openPRsEnabled"
     static let gratitudeEnabledKey = "gratitudeEnabled"
+
+    // Hide sections with no content from the generated output
+    static let hideEmptySectionsKey = "hideEmptySections"
 }

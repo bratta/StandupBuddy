@@ -110,6 +110,7 @@ You can move the database later under **Settings → Database**:
 
 - Toggle any of **Previous**, **Today**, **Blockers**, **Open Pull Requests**, and **Gratitude/Joy/Others** on or off. Disabled sections are hidden from the preview and excluded from the generated output.
 - Give any section a **custom header**. Leave it blank to use the default. Headers support text replacements like `{yesterday}` and `{format_date('%A')}`.
+- **Hide empty sections** — when enabled, any section with no content is omitted entirely from the generated standup instead of showing a `* None` bullet. Off by default.
 
 ### Text Replacements
 
