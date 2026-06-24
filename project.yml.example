@@ -60,3 +60,25 @@ targets:
     dependencies:
       - target: StandupBuddy
       - package: GRDB
+
+schemes:
+  StandupBuddy:
+    build:
+      targets:
+        StandupBuddy: all
+    run:
+      config: Debug
+      environmentVariables:
+        - variable: UPDATE_CHECK_CURRENT_VERSION
+          value: "1.0.0"
+          isEnabled: false
+    test:
+      config: Debug
+      targets:
+        - StandupBuddyTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
