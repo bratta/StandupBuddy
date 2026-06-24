@@ -51,7 +51,7 @@ struct SectionsView: View {
     private func buildMarkdown() -> String {
         var lines: [String] = []
 
-        if model.previousEnabled {
+        if model.previousEnabled && !(model.hideEmptySections && model.previousItems.isEmpty) {
             let header = model.previousHeader.isEmpty ? Setting.previousHeaderDefault : model.previousHeader
             if !lines.isEmpty { lines.append("") }
             lines.append(model.markdownFlavor.header(header))
@@ -62,7 +62,7 @@ struct SectionsView: View {
             }
         }
 
-        if model.todayEnabled {
+        if model.todayEnabled && !(model.hideEmptySections && model.todayItems.isEmpty) {
             let header = model.todayHeader.isEmpty ? Setting.todayHeaderDefault : model.todayHeader
             if !lines.isEmpty { lines.append("") }
             lines.append(model.markdownFlavor.header(header))
@@ -73,7 +73,7 @@ struct SectionsView: View {
             }
         }
 
-        if model.blockersEnabled {
+        if model.blockersEnabled && !(model.hideEmptySections && model.blockerItems.isEmpty) {
             let header = model.blockersHeader.isEmpty ? Setting.blockersHeaderDefault : model.blockersHeader
             if !lines.isEmpty { lines.append("") }
             lines.append(model.markdownFlavor.header(header))
@@ -91,7 +91,7 @@ struct SectionsView: View {
             lines.append("* (fetched live on Generate)")
         }
 
-        if model.gratitudeEnabled {
+        if model.gratitudeEnabled && !(model.hideEmptySections && model.gratitudeItems.isEmpty) {
             let header = model.gratitudeHeader.isEmpty ? Setting.gratitudeHeaderDefault : model.gratitudeHeader
             if !lines.isEmpty { lines.append("") }
             lines.append(model.markdownFlavor.header(header))

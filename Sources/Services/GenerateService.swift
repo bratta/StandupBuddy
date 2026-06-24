@@ -51,13 +51,14 @@ struct GenerateService {
                 try Queries.settingString(key: Setting.gratitudeHeaderKey, db: db)
             ) }
 
-        let (previousEnabled, todayEnabled, blockersEnabled, openPRsEnabled, gratitudeEnabled) =
+        let (previousEnabled, todayEnabled, blockersEnabled, openPRsEnabled, gratitudeEnabled, hideEmptySections) =
             try await dbQueue.read { db in (
                 try Queries.setting(key: Setting.previousEnabledKey, db: db),
                 try Queries.setting(key: Setting.todayEnabledKey, db: db),
                 try Queries.setting(key: Setting.blockersEnabledKey, db: db),
                 try Queries.setting(key: Setting.openPRsEnabledKey, db: db),
-                try Queries.setting(key: Setting.gratitudeEnabledKey, db: db)
+                try Queries.setting(key: Setting.gratitudeEnabledKey, db: db),
+                try Queries.setting(key: Setting.hideEmptySectionsKey, default: false, db: db)
             ) }
 
         let flavor = MarkdownFlavor(rawValue:
@@ -73,7 +74,7 @@ struct GenerateService {
         var lines: [String] = []
 
         // Previous
-        if previousEnabled {
+        if previousEnabled && !(hideEmptySections && prevItems.isEmpty) {
             if !lines.isEmpty { lines.append("") }
             lines.append(flavor.header(prevHeader))
             if prevItems.isEmpty {
@@ -87,7 +88,7 @@ struct GenerateService {
         }
 
         // Today
-        if todayEnabled {
+        if todayEnabled && !(hideEmptySections && todayItems.isEmpty) {
             if !lines.isEmpty { lines.append("") }
             lines.append(flavor.header(todayHeader))
             if todayItems.isEmpty {
@@ -101,7 +102,7 @@ struct GenerateService {
         }
 
         // Blockers
-        if blockersEnabled {
+        if blockersEnabled && !(hideEmptySections && blockerItems.isEmpty) {
             if !lines.isEmpty { lines.append("") }
             lines.append(flavor.header(blockersHeader))
             if blockerItems.isEmpty {
@@ -115,7 +116,7 @@ struct GenerateService {
         }
 
         // Open Pull Requests
-        if openPRsEnabled {
+        if openPRsEnabled && !(hideEmptySections && prs.isEmpty) {
             if !lines.isEmpty { lines.append("") }
             lines.append(flavor.header(prsHeader))
             if prs.isEmpty {
@@ -128,7 +129,7 @@ struct GenerateService {
         }
 
         // Gratitude/Joy/Others
-        if gratitudeEnabled {
+        if gratitudeEnabled && !(hideEmptySections && gratitudeItems.isEmpty) {
             if !lines.isEmpty { lines.append("") }
             lines.append(flavor.header(gratHeader))
             if gratitudeItems.isEmpty {

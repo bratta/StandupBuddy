@@ -71,6 +71,19 @@ struct StandupSectionsSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            Section {
+                Toggle(isOn: Binding(
+                    get: { model.hideEmptySections },
+                    set: { v in Task { await model.setSetting(key: Setting.hideEmptySectionsKey, value: v) } }
+                )) {
+                    Text("Hide empty sections")
+                }
+            } footer: {
+                Text("When enabled, sections with no content are omitted entirely from the generated standup instead of showing \"None\".")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .padding()

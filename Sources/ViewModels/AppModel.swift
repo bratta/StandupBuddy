@@ -54,6 +54,7 @@ final class AppModel {
     var blockersEnabled: Bool = true
     var openPRsEnabled: Bool = true
     var gratitudeEnabled: Bool = true
+    var hideEmptySections: Bool = false
 
     init(manager: DatabaseManager) {
         self.manager = manager
@@ -135,13 +136,14 @@ final class AppModel {
                     try Queries.settingString(key: Setting.openPRsHeaderKey, db: db),
                     try Queries.settingString(key: Setting.gratitudeHeaderKey, db: db)
                 ) }
-            (previousEnabled, todayEnabled, blockersEnabled, openPRsEnabled, gratitudeEnabled) =
+            (previousEnabled, todayEnabled, blockersEnabled, openPRsEnabled, gratitudeEnabled, hideEmptySections) =
                 try await dbQueue.read { db in (
                     try Queries.setting(key: Setting.previousEnabledKey, db: db),
                     try Queries.setting(key: Setting.todayEnabledKey, db: db),
                     try Queries.setting(key: Setting.blockersEnabledKey, db: db),
                     try Queries.setting(key: Setting.openPRsEnabledKey, db: db),
-                    try Queries.setting(key: Setting.gratitudeEnabledKey, db: db)
+                    try Queries.setting(key: Setting.gratitudeEnabledKey, db: db),
+                    try Queries.setting(key: Setting.hideEmptySectionsKey, default: false, db: db)
                 ) }
             let flavorRaw = try await dbQueue.read { db in
                 try Queries.settingString(key: Setting.markdownFormatKey, db: db)
