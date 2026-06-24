@@ -8,6 +8,10 @@ final class DatabaseManager {
     private(set) var needsSetup: Bool = false
     private(set) var folderURL: URL?
 
+    // Set when the database in the active folder was written by a newer version
+    // of the app. The UI observes this to present the resolution dialog.
+    private(set) var supersededDatabaseURL: URL?
+
     private let folderStore = DataFolderStore()
 
     // Call once on launch to open the database from a saved bookmark (or signal setup needed).
@@ -81,9 +85,12 @@ final class DatabaseManager {
         let candidate: AppDatabase
         do {
             candidate = try AppDatabase(path: newDBURL.path)
+        } catch DatabaseOpenError.superseded {
+            if let oldFolder { open(folderURL: oldFolder) }
+            return "The database in the selected folder was created by a newer version of Standup Buddy and can't be opened by this version. Update Standup Buddy, or choose a different folder."
         } catch {
             if let oldFolder { open(folderURL: oldFolder) }
-            return "The database in the selected folder couldn't be opened. It may be from a newer version of Standup Buddy.\n\n\(error.localizedDescription)"
+            return "The database in the selected folder couldn't be opened.\n\n\(error.localizedDescription)"
         }
 
         // Commit: persist the bookmark and adopt the new connection.
@@ -120,6 +127,45 @@ final class DatabaseManager {
         database = nil
     }
 
+    // Replace the database in the given folder with a fresh, empty one, backing
+    // up the existing file first. Used to recover from a superseded ("newer
+    // version") database when the user chooses to start fresh. The backup is
+    // taken before the live file is removed, so a crash mid-operation still
+    // leaves a recoverable copy. Returns a human-readable error, or nil on success.
+    func startFreshReplacing(at folderURL: URL) async -> String? {
+        let dbURL = folderURL.appendingPathComponent(DataFolderStore.dbFilename)
+        let fm = FileManager.default
+
+        // Close any open connection so the file is settled before we touch it.
+        database = nil
+
+        if fm.fileExists(atPath: dbURL.path) {
+            do {
+                try AppDatabase.backupDatabaseFile(at: dbURL.path, reason: "reset")
+            } catch {
+                open(folderURL: folderURL)
+                return "Couldn't back up the existing database before starting fresh: \(error.localizedDescription)"
+            }
+            do {
+                try fm.removeItem(at: dbURL)
+            } catch {
+                open(folderURL: folderURL)
+                return "Couldn't remove the existing database: \(error.localizedDescription)"
+            }
+        }
+
+        supersededDatabaseURL = nil
+        self.folderURL = folderURL
+        open(folderURL: folderURL)
+        return database == nil ? "Couldn't create a fresh database in the selected folder." : nil
+    }
+
+    // Clear the superseded flag once the user has resolved it (e.g. chose a
+    // different folder or quit).
+    func resolveSuperseded() {
+        supersededDatabaseURL = nil
+    }
+
     // For tests or pre-seeded in-memory databases.
     func useDatabase(_ db: AppDatabase) {
         database = db
@@ -129,8 +175,16 @@ final class DatabaseManager {
     // MARK: - Private
 
     private func open(folderURL: URL) {
-        let dbPath = folderURL.appendingPathComponent(DataFolderStore.dbFilename).path
-        database = try? AppDatabase(path: dbPath)
+        let dbURL = folderURL.appendingPathComponent(DataFolderStore.dbFilename)
+        do {
+            database = try AppDatabase(path: dbURL.path)
+            supersededDatabaseURL = nil
+        } catch DatabaseOpenError.superseded {
+            database = nil
+            supersededDatabaseURL = dbURL
+        } catch {
+            database = nil
+        }
     }
 
 }

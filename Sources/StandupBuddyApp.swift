@@ -21,6 +21,7 @@ struct StandupBuddyApp: App {
     @State private var manager: DatabaseManager
     @State private var model: AppModel
     @State private var updateChecker = UpdateChecker()
+    @State private var isPresentingSuperseded = false
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -44,7 +45,9 @@ struct StandupBuddyApp: App {
             }
             .task {
                 manager.setup()
-                if !manager.needsSetup {
+                if manager.supersededDatabaseURL != nil {
+                    handleSupersededIfNeeded()
+                } else if !manager.needsSetup {
                     await model.loadAll()
                 }
             }
@@ -53,7 +56,11 @@ struct StandupBuddyApp: App {
                 case .active:
                     Task {
                         await manager.reconnect()
-                        await model.loadAll()
+                        if manager.supersededDatabaseURL != nil {
+                            handleSupersededIfNeeded()
+                        } else {
+                            await model.loadAll()
+                        }
                     }
                 case .background, .inactive:
                     manager.close()
@@ -109,6 +116,80 @@ struct StandupBuddyApp: App {
         let alert = NSAlert()
         alert.messageText = "Database Conflict Detected"
         alert.informativeText = "iCloud found a conflicting copy of your database (both Macs wrote data before syncing). Your current data is intact. You can inspect the conflict copies via iCloud Drive in Finder."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+
+    // Present the superseded-database dialog if the manager has flagged one,
+    // guarding against re-entrancy from the launch task and scene-activation
+    // paths both firing.
+    private func handleSupersededIfNeeded() {
+        guard !isPresentingSuperseded, let url = manager.supersededDatabaseURL else { return }
+        isPresentingSuperseded = true
+        presentSupersededAlert(for: url)
+        isPresentingSuperseded = false
+    }
+
+    // The database in the active folder was written by a newer version of the
+    // app. Offer to quit (so the user can handle it), point at a different
+    // folder, or start fresh — which backs the existing file up before replacing it.
+    private func presentSupersededAlert(for dbURL: URL) {
+        let folderURL = dbURL.deletingLastPathComponent()
+
+        let alert = NSAlert()
+        alert.messageText = "Database Created by a Newer Version"
+        alert.informativeText = "The database in this folder was created by a newer version of Standup Buddy and can't be safely opened by this version.\n\nUpdate Standup Buddy, or choose a different folder. You can also start fresh — your existing database will be backed up to a “Backups” folder first so you can restore it later."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Quit Standup Buddy")     // .alertFirstButtonReturn
+        alert.addButton(withTitle: "Choose Different Folder…") // .alertSecondButtonReturn
+        alert.addButton(withTitle: "Start Fresh")             // .alertThirdButtonReturn
+
+        switch alert.runModal() {
+        case .alertFirstButtonReturn:
+            NSApp.terminate(nil)
+        case .alertSecondButtonReturn:
+            chooseDifferentFolderAfterSuperseded()
+        case .alertThirdButtonReturn:
+            Task {
+                if let error = await manager.startFreshReplacing(at: folderURL) {
+                    presentSupersededRecoveryError(error)
+                } else {
+                    await model.loadAll()
+                }
+            }
+        default:
+            break
+        }
+    }
+
+    private func chooseDifferentFolderAfterSuperseded() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Use as Database Folder"
+        panel.message = "Choose a folder whose database was created by this version of Standup Buddy (or an empty folder to start fresh there)."
+        panel.directoryURL = DataFolderStore.defaultPickerDirectory()
+
+        guard panel.runModal() == .OK, let url = panel.url else {
+            // User cancelled — re-present so they don't end up with no database.
+            if let dbURL = manager.supersededDatabaseURL { presentSupersededAlert(for: dbURL) }
+            return
+        }
+
+        manager.resolveSuperseded()
+        manager.selectFolder(url)
+        Task {
+            if manager.database != nil { await model.loadAll() }
+        }
+    }
+
+    private func presentSupersededRecoveryError(_ message: String) {
+        let alert = NSAlert()
+        alert.messageText = "Couldn't Start Fresh"
+        alert.informativeText = message
         alert.alertStyle = .warning
         alert.addButton(withTitle: "OK")
         alert.runModal()
